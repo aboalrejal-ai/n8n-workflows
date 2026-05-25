@@ -108,3 +108,8 @@ package-lock.json
 import_log.json
 # Archive folder for old files
 archive/
+
+# New workflows staging area (local only)
+new_workflows/*
+!new_workflows/INSTRUCTIONS.md
+!new_workflows/process_imports.py
