@@ -246,31 +246,9 @@ class WorkflowSearch {
     createDetailsModal(workflow) {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 1rem;
-        `;
 
         const modalContent = document.createElement('div');
-        modalContent.style.cssText = `
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-            color: #4a5568;
-        `;
+        modalContent.className = 'modal-content';
 
         const allIntegrations = workflow.integrations
             .map(integration => `<span class="integration-tag">${integration}</span>`)
@@ -281,44 +259,44 @@ class WorkflowSearch {
             .join('');
 
         modalContent.innerHTML = `
-            <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+            <button class="modal-close-btn" onclick="this.parentElement.parentElement.remove()">&times;</button>
 
-            <h2 style="margin-bottom: 1rem;">${this.escapeHtml(workflow.name)}</h2>
+            <h2 class="modal-title">${this.escapeHtml(workflow.name)}</h2>
 
-            <div style="margin-bottom: 1.5rem;">
-                <strong>Description:</strong>
-                <p style="margin-top: 0.5rem;">${this.escapeHtml(workflow.description)}</p>
+            <div class="modal-section">
+                <span class="modal-section-title">Description</span>
+                <p class="modal-description">${this.escapeHtml(workflow.description)}</p>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-                <strong>Details:</strong>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
-                    <div><strong>Category:</strong> ${workflow.category}</div>
-                    <div><strong>Trigger:</strong> ${workflow.trigger_type}</div>
-                    <div><strong>Complexity:</strong> ${workflow.complexity}</div>
-                    <div><strong>Nodes:</strong> ${workflow.node_count}</div>
-                    <div><strong>Status:</strong> ${workflow.active ? 'Active' : 'Inactive'}</div>
-                    <div><strong>File:</strong> ${workflow.filename}</div>
+            <div class="modal-section">
+                <span class="modal-section-title">Workflow Specs</span>
+                <div class="modal-details-grid">
+                    <div class="modal-detail-item"><strong>Category:</strong> <span>${workflow.category}</span></div>
+                    <div class="modal-detail-item"><strong>Trigger:</strong> <span>${workflow.trigger_type}</span></div>
+                    <div class="modal-detail-item"><strong>Complexity:</strong> <span>${workflow.complexity}</span></div>
+                    <div class="modal-detail-item"><strong>Nodes:</strong> <span>${workflow.node_count}</span></div>
+                    <div class="modal-detail-item"><strong>Status:</strong> <span>${workflow.active ? 'Active' : 'Inactive'}</span></div>
+                    <div class="modal-detail-item modal-detail-file"><strong>File:</strong> <code>${workflow.filename}</code></div>
                 </div>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-                <strong>Integrations:</strong>
-                <div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.25rem;">
+            <div class="modal-section">
+                <span class="modal-section-title">Integrations (${workflow.integrations.length})</span>
+                <div class="modal-integrations-flex">
                     ${allIntegrations}
                 </div>
             </div>
 
             ${workflow.tags.length > 0 ? `
-                <div style="margin-bottom: 1.5rem;">
-                    <strong>Tags:</strong>
-                    <div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                <div class="modal-section">
+                    <span class="modal-section-title">Tags</span>
+                    <div class="modal-tags-flex">
                         ${allTags}
                     </div>
                 </div>
             ` : ''}
 
-            <div style="display: flex; gap: 1rem;">
+            <div class="modal-actions">
                 <a href="${workflow.download_url}" class="btn btn-primary" target="_blank">
                     📥 Download JSON
                 </a>
