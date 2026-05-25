@@ -17,7 +17,7 @@
 
 ## What's New
 
-### Latest Updates (November 2025)
+### Latest Updates (May 2026)
 - **Enhanced Security**: Full security audit completed, all CVEs resolved
 - **Docker Support**: Multi-platform builds for linux/amd64 and linux/arm64
 - **GitHub Pages**: Live searchable interface at [aboalrejal-ai.github.io/n8n-workflows](https://aboalrejal-ai.github.io/n8n-workflows)
