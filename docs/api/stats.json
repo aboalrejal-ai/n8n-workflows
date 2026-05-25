@@ -1,0 +1,20 @@
+{
+  "total_workflows": 2061,
+  "active_workflows": 215,
+  "inactive_workflows": 1846,
+  "total_nodes": 30774,
+  "unique_integrations": 311,
+  "categories": 15,
+  "triggers": {
+    "Complex": 647,
+    "Manual": 582,
+    "Scheduled": 244,
+    "Webhook": 588
+  },
+  "complexity": {
+    "high": 750,
+    "low": 467,
+    "medium": 844
+  },
+  "last_updated": "2026-05-26T00:03:15.688708"
+}
