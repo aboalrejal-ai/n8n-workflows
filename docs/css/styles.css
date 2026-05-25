@@ -474,8 +474,8 @@ code {
 /* Dynamic Responsive Workflows Grid */
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
 /* Premium Workflow UI Cards */

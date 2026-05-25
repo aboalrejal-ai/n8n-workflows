@@ -8,7 +8,7 @@ class WorkflowSearch {
         this.searchIndex = null;
         this.currentResults = [];
         this.displayedCount = 0;
-        this.resultsPerPage = 20;
+        this.resultsPerPage = 12;
         this.isLoading = false;
 
         // DOM elements
