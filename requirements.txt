@@ -7,7 +7,7 @@ pydantic==2.5.3
 # Authentication & Security
 PyJWT==2.8.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.9
+python-multipart==0.0.27
 
 # HTTP & Networking
 httpx==0.26.0
