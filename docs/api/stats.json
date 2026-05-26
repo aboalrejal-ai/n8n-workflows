@@ -1,20 +1,20 @@
 {
-  "total_workflows": 2061,
-  "active_workflows": 215,
-  "inactive_workflows": 1846,
-  "total_nodes": 30774,
-  "unique_integrations": 311,
+  "total_workflows": 6435,
+  "active_workflows": 285,
+  "inactive_workflows": 6150,
+  "total_nodes": 54520,
+  "unique_integrations": 397,
   "categories": 15,
   "triggers": {
-    "Complex": 647,
-    "Manual": 582,
-    "Scheduled": 244,
-    "Webhook": 588
+    "Complex": 855,
+    "Manual": 892,
+    "Scheduled": 919,
+    "Webhook": 3769
   },
   "complexity": {
-    "high": 750,
-    "low": 467,
-    "medium": 844
+    "high": 909,
+    "low": 4323,
+    "medium": 1203
   },
-  "last_updated": "2026-05-26T00:47:32.252013"
+  "last_updated": "2026-05-26T06:19:17.837630"
 }
