@@ -5,13 +5,13 @@ uvicorn[standard]==0.27.0
 pydantic==2.5.3
 
 # Authentication & Security
-PyJWT==2.8.0
+PyJWT==2.12.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.9
+python-multipart==0.0.27
 
 # HTTP & Networking
 httpx==0.26.0
-requests==2.31.0
+requests==2.33.0
 
 # Monitoring & Performance
 psutil==5.9.8
@@ -20,4 +20,4 @@ psutil==5.9.8
 email-validator==2.1.0
 
 # Production server
-gunicorn==21.2.0
+gunicorn==22.0.0
