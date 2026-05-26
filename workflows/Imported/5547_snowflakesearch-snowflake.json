@@ -1,0 +1,94 @@
+{
+  "updatedAt": "2026-01-23T21:17:33.518Z",
+  "createdAt": "2026-01-23T21:16:44.960Z",
+  "id": "Pftg70EC3uOnK6El0VUtb",
+  "name": "snowFlakeSearch",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "path": "getSnowFlake"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cd0e5924-21ab-43b0-8634-540beb5d5971",
+      "name": "MCP Server Trigger",
+      "webhookId": "ef10e138-0d45-401c-a4d8-e87b849e2657",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bMR59ykKdOIA8mmY",
+          "name": "N8N-Header-Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "operation": "executeQuery"
+      },
+      "type": "n8n-nodes-base.snowflakeTool",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "8b27e0d4-106e-4407-a56f-42fa9fee2c0c",
+      "name": "Snowflake",
+      "credentials": {
+        "snowflake": {
+          "id": "oi8Cr7VRLwSbn6CV",
+          "name": "Snowflake account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Snowflake": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "52bb0964-8b3c-4a64-ba50-38ed249cdccd",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-23T21:16:44.960Z",
+      "createdAt": "2026-01-23T21:16:44.960Z",
+      "role": "workflow:owner",
+      "workflowId": "Pftg70EC3uOnK6El0VUtb",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": [
+    {
+      "updatedAt": "2025-12-26T20:51:07.034Z",
+      "createdAt": "2025-12-26T20:51:07.034Z",
+      "id": "fCpuIwo0eJkcPKC3",
+      "name": "snowflake"
+    }
+  ]
+}

@@ -1,0 +1,344 @@
+{
+  "updatedAt": "2025-12-30T17:46:51.311Z",
+  "createdAt": "2025-12-28T00:15:11.665Z",
+  "id": "TY0kArjJt4uZLkjy",
+  "name": "WebScraping with File Updates and Email with Attachment",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        -160
+      ],
+      "id": "440169c9-0c8b-43b9-ba0c-767bb9c7c7c6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://books.toscrape.com/",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -656,
+        -160
+      ],
+      "id": "8d5f791f-611b-4798-aced-ec2b9b7f9022",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "books",
+              "cssSelector": ".row > li",
+              "returnValue": "html",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -160
+      ],
+      "id": "00cee524-9914-44b2-8cf8-fd4f1ca49852",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "books",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -160
+      ],
+      "id": "3b021dab-82f8-4943-839c-6af57a2cf8b3",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "books",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "h3"
+            },
+            {
+              "key": "price",
+              "cssSelector": "article > div.product_price > p.price_color"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -160
+      ],
+      "id": "c50b2fb4-d5dd-4ae3-8063-a05facf477a6",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "price",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "cc00e3a5-59b3-404b-b471-e63b171c8366",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        -160
+      ],
+      "id": "fc12daaa-bcce-4e6c-8df6-ecc8a7157b57",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "sendTo": "shawnmcrowley@gmail.com",
+        "subject": "Webscraping CSV",
+        "message": "Scraped CSV Data from a Bookstore Website",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -160
+      ],
+      "id": "5a795a5d-3ce7-4735-b772-a1c3c3bf7803",
+      "name": "Send a message",
+      "webhookId": "879ce440-da1f-483a-9c91-e4a7e0ea649c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4",
+          "mode": "list",
+          "cachedResultName": "Sample_Workflow_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 604357973,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit#gid=604357973"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        48
+      ],
+      "id": "37468a1b-5e95-47ec-8f68-1f01cdbe1489",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZU6vdyy5jG2m2v3I",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ae5e614b-9bbb-49fe-bbdc-597d4c0ad366",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-28T00:15:11.665Z",
+      "createdAt": "2025-12-28T00:15:11.665Z",
+      "role": "workflow:owner",
+      "workflowId": "TY0kArjJt4uZLkjy",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

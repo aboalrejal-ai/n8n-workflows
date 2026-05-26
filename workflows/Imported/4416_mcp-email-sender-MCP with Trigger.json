@@ -1,0 +1,169 @@
+{
+  "updatedAt": "2025-12-30T17:40:20.577Z",
+  "createdAt": "2025-12-28T15:34:26.048Z",
+  "id": "8YAGr0M3BfHXL2E5",
+  "name": "MCP Email Sender",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "email_sender"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d5692cb6-3dd4-4fb1-8593-5adf75c480ac",
+      "name": "MCP Server Trigger",
+      "webhookId": "d3ff01c7-5b5b-4d6b-b0d7-242076c05ca7"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "{\n  \"name\": \"send_email\",\n  \"description\": \"Sends an email to a specified recipient\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"to\": {\n        \"type\": \"string\",\n        \"description\": \"Recipient email address\"\n      },\n      \"subject\": {\n        \"type\": \"string\", \n        \"description\": \"Email subject line\"\n      },\n      \"message\": {\n        \"type\": \"string\",\n        \"description\": \"Email body content\"\n      }\n    },\n    \"required\": [\"to\", \"subject\", \"message\"]\n  }\n}Send a message in Gmail",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "6b9f5b22-f916-4f2f-a0be-19b4f04f8d8c",
+      "name": "Gmail Send Messages from MCPClients",
+      "webhookId": "e3fe41ee-4e32-41b2-8cda-52b989ad2d98",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Send Messages from MCPClients": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9715a646-ccfe-4a9f-9769-f1e27207d40b",
+  "activeVersionId": "9715a646-ccfe-4a9f-9769-f1e27207d40b",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-28T15:34:26.048Z",
+      "createdAt": "2025-12-28T15:34:26.048Z",
+      "role": "workflow:owner",
+      "workflowId": "8YAGr0M3BfHXL2E5",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-28T16:01:35.652Z",
+    "createdAt": "2025-12-28T16:00:20.832Z",
+    "versionId": "9715a646-ccfe-4a9f-9769-f1e27207d40b",
+    "workflowId": "8YAGr0M3BfHXL2E5",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "email_sender"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "d5692cb6-3dd4-4fb1-8593-5adf75c480ac",
+        "name": "MCP Server Trigger",
+        "webhookId": "d3ff01c7-5b5b-4d6b-b0d7-242076c05ca7"
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "{\n  \"name\": \"send_email\",\n  \"description\": \"Sends an email to a specified recipient\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"to\": {\n        \"type\": \"string\",\n        \"description\": \"Recipient email address\"\n      },\n      \"subject\": {\n        \"type\": \"string\", \n        \"description\": \"Email subject line\"\n      },\n      \"message\": {\n        \"type\": \"string\",\n        \"description\": \"Email body content\"\n      }\n    },\n    \"required\": [\"to\", \"subject\", \"message\"]\n  }\n}Send a message in Gmail",
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+          "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+          "emailType": "text",
+          "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmailTool",
+        "typeVersion": 2.2,
+        "position": [
+          96,
+          208
+        ],
+        "id": "6b9f5b22-f916-4f2f-a0be-19b4f04f8d8c",
+        "name": "Gmail Send Messages from MCPClients",
+        "webhookId": "e3fe41ee-4e32-41b2-8cda-52b989ad2d98",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "UgfIFsEzUov3SEVK",
+            "name": "Gmail account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Gmail Send Messages from MCPClients": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "Version 9715a646",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-29T18:31:40.309Z",
+      "createdAt": "2025-12-29T18:31:40.309Z",
+      "id": "aCTxuGavtPCGS4aR",
+      "name": "MCP with Trigger"
+    },
+    {
+      "updatedAt": "2025-12-29T17:34:44.389Z",
+      "createdAt": "2025-12-29T17:34:44.389Z",
+      "id": "ePRll2KlFXoo4sVV",
+      "name": "email"
+    },
+    {
+      "updatedAt": "2025-12-29T18:31:54.697Z",
+      "createdAt": "2025-12-29T18:31:54.697Z",
+      "id": "uFi2tCfwe2HRZBCd",
+      "name": "Warp MCP Client"
+    }
+  ]
+}

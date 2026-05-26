@@ -1,0 +1,460 @@
+{
+  "updatedAt": "2026-01-17T18:22:41.291Z",
+  "createdAt": "2026-01-06T17:41:12.377Z",
+  "id": "OYOxBB3KceUiurLMhOOom",
+  "name": "Content_Aggregation",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "name": "When clicking ‘Execute workflow’",
+      "parameters": {},
+      "position": [
+        -1056,
+        -624
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "id": "0e4995ea-8e21-4a26-a79c-6b9f9c6b454c"
+    },
+    {
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZU6vdyy5jG2m2v3I",
+          "name": "Google Sheets account"
+        }
+      },
+      "name": "Get row(s) in sheet",
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "cachedResultName": "Sample_Workflow_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit?usp=drivesdk",
+          "mode": "list",
+          "value": "1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "date": "FORMATTED_STRING",
+              "general": "UNFORMATTED_VALUE"
+            }
+          },
+          "returnFirstMatch": false
+        },
+        "sheetName": {
+          "__rl": true,
+          "cachedResultName": "Content_Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit#gid=1258615245",
+          "mode": "list",
+          "value": 1258615245
+        }
+      },
+      "position": [
+        -832,
+        -624
+      ],
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "id": "32836fa3-6000-4cb7-ae02-ce384b12d1eb"
+    },
+    {
+      "name": "AI Agent",
+      "parameters": {
+        "options": {},
+        "promptType": "define",
+        "text": "=You are a social media content expert. Create engaging posts for the following platforms based on this topic: {{ $json[\"Content Idea\"] }}\n\nCreate:\n1. A Content Item (max 1000 characters, busy specific topis, highlight in bold particular trends like \"jeans, socks, garments, sustainability, health care goods like diapers or gowns\")\n2. A List of Competitors (max 5) in the Industry by Name\n3. A Twitter/X post (max 280 characters, punchy, include 2-3 relevant hashtags)\n4. A LinkedIn post (professional tone, 150-300 words, storytelling format, end with a question)\n\nReturn as JSON with keys: content, competitors,twitter, linkedin"
+      },
+      "position": [
+        -608,
+        -624
+      ],
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "id": "14dad7a5-c67a-49c4-a196-a07dc771b107"
+    },
+    {
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      },
+      "name": "Ollama Chat Model",
+      "parameters": {
+        "model": "gpt-oss:120b-cloud",
+        "options": {
+          "format": "json",
+          "temperature": 0.7
+        }
+      },
+      "position": [
+        -608,
+        -400
+      ],
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "id": "82fe5167-5de7-4257-9234-8d93dbf18d4f"
+    },
+    {
+      "name": "Code in JavaScript",
+      "parameters": {
+        "jsCode": "// Get the input data\nconst inputItems = $input.all();\n\n// Map through items and extract the structured data\nreturn inputItems.map(item => {\n    const inputJson = item.json;\n    const outputText = inputJson.output || inputJson.content || JSON.stringify(inputJson);\n    \n    let parsed = null;\n    let error = null;\n    \n    // Try to extract and parse the JSON from markdown code blocks\n    const jsonBlockMatch = outputText.match(/```json\\s*([\\s\\S]*?)\\s*```/);\n    \n    if (jsonBlockMatch) {\n        try {\n            parsed = JSON.parse(jsonBlockMatch[1]);\n        } catch (e) {\n            error = \"Failed to parse JSON block: \" + e.message;\n        }\n    }\n    \n    // If no markdown block or parsing failed, try parsing the whole text\n    if (!parsed) {\n        try {\n            parsed = JSON.parse(outputText);\n        } catch (e) {\n            error = \"Failed to parse JSON: \" + e.message;\n        }\n    }\n    \n    // If we successfully parsed, return the structured data\n    if (parsed) {\n        return {\n            json: {\n                content: parsed.content || \"\",\n                competitors: parsed.competitors || [],\n                twitter: parsed.twitter || \"\",\n                linkedin: parsed.linkedin || \"\"\n            }\n        };\n    }\n    \n    // If all parsing failed, return original with error\n    return {\n        json: {\n            content: outputText,\n            competitors: [],\n            twitter: \"\",\n            linkedin: \"\",\n            _parseError: error\n        }\n    };\n});"
+      },
+      "position": [
+        -272,
+        -624
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "a4f159d4-d8c1-4330-ae5a-4e12afd0e1fd"
+    },
+    {
+      "name": "HTTP Request",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "X-Subscription-Token",
+              "value": "BSA9Cn5VT3G5urel2HP6bWEYDiXBt3T"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchInterval": 10000,
+              "batchSize": 1
+            }
+          }
+        },
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.competitors }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "sendQuery": true,
+        "url": "https://api.search.brave.com/res/v1/web/search"
+      },
+      "position": [
+        176,
+        -624
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "id": "5a5fc2fd-008b-4f72-a597-d720132c967c"
+    },
+    {
+      "name": "Split Out",
+      "parameters": {
+        "fieldToSplitOut": "competitors",
+        "options": {}
+      },
+      "position": [
+        -48,
+        -624
+      ],
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "id": "14715ea0-59cd-4200-903b-331ead1b032c"
+    },
+    {
+      "name": "Edit Fields",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "05b7f904-b00e-42b2-92ae-11d4e9ca8448",
+              "name": "query.original",
+              "type": "string",
+              "value": "={{ $json.query.original }}"
+            },
+            {
+              "id": "ebe19515-ec30-4ebd-ad0c-e45af9859406",
+              "name": "videos",
+              "type": "object",
+              "value": "={{ $json.videos }}"
+            },
+            {
+              "id": "00e93f57-2d75-4027-ba97-81f0b1472318",
+              "name": "web.results",
+              "type": "array",
+              "value": "={{ $json.web.results }}"
+            },
+            {
+              "id": "71341052-718e-4427-a818-77e7bcf3b68a",
+              "name": "news",
+              "type": "string",
+              "value": "={{ $json.news }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        400,
+        -624
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "id": "dfb3fcb9-2f71-48d9-b0da-687c4961b949"
+    },
+    {
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "ppTFdCJPrelZRsfP",
+          "name": "Microsoft Teams account"
+        }
+      },
+      "name": "Create message",
+      "parameters": {
+        "channelId": {
+          "__rl": true,
+          "cachedResultName": "Actions and Errors",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1%40thread.tacv2/WorkFlow%20Notifications?groupId=c21f3bd3-a3b8-4459-97ce-6dc2c255488a&tenantId=02039216-1f40-4e50-9a19-964122f69012&allowXTenantAccess=True&ngc=True",
+          "mode": "list",
+          "value": "19:_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1@thread.tacv2"
+        },
+        "contentType": "html",
+        "message": "=<h2>Today's Content:</h2>  {{ $json.content }}  <p>\n<h3>Competitors:</h3> {{ $json.competitors }}  <p>\n<h3>Twitter Post:</h3> {{ $json.twitter }} <p>\n<h3>Linkedin In Content: </h3> {{ $json.linkedin }}",
+        "options": {
+          "includeLinkToWorkflow": false
+        },
+        "resource": "channelMessage",
+        "teamId": {
+          "__rl": true,
+          "cachedResultName": "WorkFlow Notifications",
+          "mode": "list",
+          "value": "c21f3bd3-a3b8-4459-97ce-6dc2c255488a"
+        }
+      },
+      "position": [
+        -32,
+        -416
+      ],
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "webhookId": "e1ff1254-c010-4e2c-84ea-394e13334fc7",
+      "id": "83426659-be41-4fa1-8a6b-aeea78838a68"
+    },
+    {
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZU6vdyy5jG2m2v3I",
+          "name": "Google Sheets account"
+        }
+      },
+      "name": "Append row in sheet",
+      "parameters": {
+        "columns": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "query",
+              "id": "query",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "videos",
+              "id": "videos",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "web",
+              "id": "web",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "news",
+              "id": "news",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {}
+        },
+        "documentId": {
+          "__rl": true,
+          "cachedResultName": "Sample_Workflow_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit?usp=drivesdk",
+          "mode": "list",
+          "value": "1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4"
+        },
+        "operation": "append",
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "cachedResultName": "competitive_analysis",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit#gid=1483183019",
+          "mode": "list",
+          "value": 1483183019
+        }
+      },
+      "position": [
+        608,
+        -624
+      ],
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "id": "e7622fb0-e13e-4d95-ad06-71407648bca8"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Code in JavaScript",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Create message",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Split Out",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Create message": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Append row in sheet",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Edit Fields",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "ai_languageModel"
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "HTTP Request",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Get row(s) in sheet",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "3e4ece3a-4bcb-4316-8d8e-7cae62a4ea3b",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-06T17:41:12.377Z",
+      "createdAt": "2026-01-06T17:41:12.377Z",
+      "role": "workflow:owner",
+      "workflowId": "OYOxBB3KceUiurLMhOOom",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

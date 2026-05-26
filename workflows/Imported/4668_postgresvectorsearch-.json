@@ -1,0 +1,180 @@
+{
+  "updatedAt": "2026-01-29T22:45:13.740Z",
+  "createdAt": "2026-01-23T21:21:16.597Z",
+  "id": "8196_s4PGUi0oJiv6PE0L",
+  "name": "postgresVectorSearch",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "path": "getVector"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        -304
+      ],
+      "id": "017cdddf-e421-453f-be29-ad5174b11fb2",
+      "name": "MCP Server Trigger",
+      "webhookId": "8667b310-16b7-40e5-a6d9-4ac57b9dd222",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bMR59ykKdOIA8mmY",
+          "name": "N8N-Header-Key"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": "mxbai-embed-large:335m"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "e213efe6-63cb-41e4-a903-bd334284eac9",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -96,
+        -64
+      ],
+      "id": "c9d63872-ed63-45ee-8e91-4222ff0667d0",
+      "name": "When chat message received",
+      "webhookId": "f4405398-5be6-4041-8a9a-bfb626ad6510"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "llama3.1:8b",
+          "mode": "list",
+          "cachedResultName": "llama3.1:8b"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.chatInput }}"
+            }
+          ]
+        },
+        "options": {
+          "system": "Role:\nYou are a research analyst that's role is to find matching content in the database related to the users query.  \n\nTools: Vector Database Store and Embeddings Engine\n\nOutput:  JSON with matching content from the Vector Database"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.ollama",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -144
+      ],
+      "id": "6e809066-6e97-4ea4-b7e2-d37e64fb8d8b",
+      "name": "Message a model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "{\n  \"name\": \"docmentVector\",\n  \"description\": \"Retrieves matching documents from the document_chunks table\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"query\": {\n        \"type\": \"string\",\n        \"description\": \"Document Content that Match the Query String\"\n      }\n    },\n    \"required\": [\"query\"]\n  }\n}",
+        "tableName": "=public.document_chunks",
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        0
+      ],
+      "id": "84e4bc5b-244e-4152-b399-ad995b4366cc",
+      "name": "documentVector",
+      "credentials": {
+        "postgres": {
+          "id": "eU8STYFXdclsY4x1",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "documentVector",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "documentVector": {
+      "ai_tool": [
+        [
+          {
+            "node": "Message a model",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "2ae4a46d-d989-43c0-8197-c905255c88cc",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-23T21:21:16.597Z",
+      "createdAt": "2026-01-23T21:21:16.597Z",
+      "role": "workflow:owner",
+      "workflowId": "8196_s4PGUi0oJiv6PE0L",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

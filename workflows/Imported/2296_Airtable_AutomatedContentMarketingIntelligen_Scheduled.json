@@ -1,0 +1,820 @@
+{
+  "updatedAt": "2026-01-17T18:20:05.268Z",
+  "createdAt": "2025-12-15T19:38:41.164Z",
+  "id": "xCkuZByfUeGvgTbE",
+  "name": "Automated Content Marketing Intelligence with OpenAI, Ahrefs & Multi-platform Integration",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "name": "Daily Schedule Trigger",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "position": [
+        1072,
+        672
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "id": "de9d01b6-8204-4f01-848a-78c60c1c7a38"
+    },
+    {
+      "name": "📋 Configuration Settings",
+      "parameters": {
+        "options": {},
+        "values": {
+          "string": [
+            {
+              "name": "competitor_domains",
+              "value": "opofinance.com,etoro.com"
+            },
+            {
+              "name": "target_regions",
+              "value": "US,UK,DE,FR,JP"
+            },
+            {
+              "name": "seed_keywords",
+              "value": "forex trading,social trade,how to trade"
+            },
+            {
+              "name": "timeframe_days",
+              "value": "30"
+            }
+          ]
+        }
+      },
+      "position": [
+        1296,
+        672
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "id": "3de75f31-e60b-46bf-943b-fc7aad2cc8d9"
+    },
+    {
+      "name": "📊 SEMrush Competitor Keywords",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "queryAuth",
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "domain_organic"
+            },
+            {
+              "name": "key",
+              "value": "={{ $credentials.semrush.api_key }}"
+            },
+            {
+              "name": "domain",
+              "value": "={{ $json.competitor_domains.split(',')[0] }}"
+            },
+            {
+              "name": "display_limit",
+              "value": "50"
+            },
+            {
+              "name": "export_columns",
+              "value": "Ph,Po,Pp,Pd,Nq,Cp,Ur,Tr,Tc,Co,Nr,Td"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://api.semrush.com/"
+      },
+      "position": [
+        1520,
+        688
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "628970e2-37fa-48b1-943e-e41a4964d276"
+    },
+    {
+      "name": "📈 BuzzSumo Content Performance",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.seed_keywords.split(',')[0] }}"
+            },
+            {
+              "name": "num_results",
+              "value": "20"
+            },
+            {
+              "name": "published_after",
+              "value": "={{ $now.minus({ days: parseInt($json.timeframe_days) }).toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://api.buzzsumo.com/search/articles.json"
+      },
+      "position": [
+        1520,
+        800
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "052fdcc5-fc55-4a30-8981-7d961106c41f"
+    },
+    {
+      "name": "📊 Google Trends Data",
+      "parameters": {
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "hl",
+              "value": "en-US"
+            },
+            {
+              "name": "tz",
+              "value": "360"
+            },
+            {
+              "name": "req",
+              "value": "={\"comparisonItem\":[{\"keyword\":\"{{ $json.seed_keywords.split(',')[0] }}\",\"geo\":\"US\",\"time\":\"today 3-m\"}],\"category\":0,\"property\":\"\"}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://trends.google.com/trends/api/explore"
+      },
+      "position": [
+        1728,
+        560
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "75b1110e-cb4c-400c-8119-35d6c605da39"
+    },
+    {
+      "name": "❓ AnswerThePublic Questions",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "keyword",
+              "value": "={{ $json.seed_keywords.split(',')[0] }}"
+            },
+            {
+              "name": "country",
+              "value": "us"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://api.answerthepublic.com/api/v1/questions"
+      },
+      "position": [
+        1728,
+        688
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "8acc7bcd-2026-4402-bc8f-207ec5d31cbe"
+    },
+    {
+      "name": "💬 Reddit Audience Insights",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "oAuth2Api",
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "25"
+            },
+            {
+              "name": "t",
+              "value": "month"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "=https://oauth.reddit.com/r/{{ $json.seed_keywords.split(',')[0].replace(' ', '') }}/hot.json"
+      },
+      "position": [
+        1728,
+        800
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "b080bcd5-caf5-4cb3-aa8a-9d46289cde06"
+    },
+    {
+      "name": "🔄 Process Competitor Data",
+      "parameters": {
+        "jsCode": "// Combine all competitor data\nconst ahrefsData = $input.first()?.json || {};\nconst semrushData = $input.all().find(item => item.json?.domain) || {};\nconst buzzsumoData = $input.all().find(item => item.json?.results) || {};\n\n// Process competitor intelligence\nconst competitorIntelligence = {\n  timestamp: new Date().toISOString(),\n  domain: ahrefsData.target || 'N/A',\n  traffic_estimate: ahrefsData.traffic?.organic?.value || 0,\n  backlinks: ahrefsData.backlinks?.total || 0,\n  top_keywords: semrushData.json?.keywords?.slice(0, 10) || [],\n  viral_content: buzzsumoData.json?.results?.slice(0, 5) || [],\n  content_gaps: [],\n  publishing_frequency: '5-7 posts/week' // This would be calculated from actual data\n};\n\n// Identify content gaps (simplified logic)\nif (buzzsumoData.json?.results) {\n  const competitorTopics = buzzsumoData.json.results.map(article => article.title);\n  competitorIntelligence.content_gaps = [\n    'Sustainable packaging solutions',\n    'Circular economy in fashion',\n    'Eco-friendly manufacturing processes'\n  ];\n}\n\nreturn [{ json: competitorIntelligence }];"
+      },
+      "position": [
+        1952,
+        624
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "2f2afe9d-51e7-4f81-937d-4c45c9f9c704"
+    },
+    {
+      "name": "📈 Process Keyword Trends",
+      "parameters": {
+        "jsCode": "// Combine trends and keyword data\nconst trendsData = $input.all().find(item => item.json?.default) || {};\nconst questionsData = $input.all().find(item => item.json?.questions) || {};\n\n// Process keyword opportunities\nconst keywordOpportunities = {\n  timestamp: new Date().toISOString(),\n  trending_keywords: [],\n  long_tail_questions: [],\n  search_volume_trends: [],\n  seasonal_patterns: [],\n  content_opportunities: []\n};\n\n// Extract trending keywords from Google Trends\nif (trendsData.json?.default?.timelineData) {\n  keywordOpportunities.trending_keywords = trendsData.json.default.timelineData\n    .slice(0, 10)\n    .map(item => ({\n      keyword: item.formattedValue || 'Unknown',\n      trend_velocity: item.value?.[0] || 0,\n      region: 'US'\n    }));\n}\n\n// Extract questions from AnswerThePublic\nif (questionsData.json?.questions) {\n  keywordOpportunities.long_tail_questions = questionsData.json.questions\n    .slice(0, 15)\n    .map(q => ({\n      question: q.question || q,\n      search_volume: Math.floor(Math.random() * 1000) + 100, // Placeholder\n      difficulty: Math.floor(Math.random() * 100) + 1,\n      suggested_format: ['blog', 'video', 'infographic'][Math.floor(Math.random() * 3)]\n    }));\n}\n\n// Generate content opportunities\nkeywordOpportunities.content_opportunities = [\n  {\n    title: '5 Sustainable Fashion Trends Taking Over 2024',\n    keyword_target: 'sustainable fashion trends',\n    estimated_traffic: 2500,\n    content_type: 'blog',\n    priority: 'high'\n  },\n  {\n    title: 'How to Build a Circular Economy Wardrobe',\n    keyword_target: 'circular economy fashion',\n    estimated_traffic: 1800,\n    content_type: 'guide',\n    priority: 'medium'\n  }\n];\n\nreturn [{ json: keywordOpportunities }];"
+      },
+      "position": [
+        1952,
+        752
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "8e94877d-3cc5-4f45-b97e-ea7e6348bf8b"
+    },
+    {
+      "name": "👥 Process Audience Insights",
+      "parameters": {
+        "jsCode": "// Process Reddit audience insights\nconst redditData = $input.first()?.json || {};\n\nconst audienceInsights = {\n  timestamp: new Date().toISOString(),\n  top_pain_points: [],\n  common_questions: [],\n  sentiment_analysis: 'neutral',\n  engagement_topics: [],\n  regional_preferences: {}\n};\n\n// Extract pain points from Reddit posts\nif (redditData.data?.children) {\n  const posts = redditData.data.children;\n  \n  audienceInsights.top_pain_points = posts\n    .filter(post => post.data.title.includes('problem') || post.data.title.includes('issue'))\n    .slice(0, 10)\n    .map(post => ({\n      pain_point: post.data.title,\n      upvotes: post.data.ups || 0,\n      comments: post.data.num_comments || 0,\n      source: 'reddit'\n    }));\n    \n  audienceInsights.common_questions = posts\n    .filter(post => post.data.title.includes('?') || post.data.title.toLowerCase().includes('how'))\n    .slice(0, 10)\n    .map(post => ({\n      question: post.data.title,\n      engagement_score: (post.data.ups || 0) + (post.data.num_comments || 0),\n      category: 'general'\n    }));\n    \n  audienceInsights.engagement_topics = posts\n    .sort((a, b) => (b.data.ups || 0) - (a.data.ups || 0))\n    .slice(0, 5)\n    .map(post => ({\n      topic: post.data.title,\n      engagement_score: post.data.ups || 0,\n      discussion_level: post.data.num_comments || 0\n    }));\n}\n\n// Add some sample regional preferences\naudienceInsights.regional_preferences = {\n  'US': ['affordability', 'brand transparency'],\n  'EU': ['sustainability certifications', 'local production'],\n  'APAC': ['quality', 'innovation']\n};\n\nreturn [{ json: audienceInsights }];"
+      },
+      "position": [
+        1952,
+        864
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "3b9f8afe-dbeb-4750-8111-78302a3d9982"
+    },
+    {
+      "name": "💾 Save to Airtable - Competitors",
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "content-research-base"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "backlinks": "={{ $('🔄 Process Competitor Data').first().json.backlinks }}",
+            "content_gaps": "={{ $('🔄 Process Competitor Data').first().json.content_gaps.join(', ') }}",
+            "domain": "={{ $('🔄 Process Competitor Data').first().json.domain }}",
+            "publishing_frequency": "={{ $('🔄 Process Competitor Data').first().json.publishing_frequency }}",
+            "timestamp": "={{ $('🔄 Process Competitor Data').first().json.timestamp }}",
+            "traffic_estimate": "={{ $('🔄 Process Competitor Data').first().json.traffic_estimate }}"
+          }
+        },
+        "operation": "create",
+        "options": {},
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "competitor-intelligence"
+        }
+      },
+      "position": [
+        2608,
+        560
+      ],
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "id": "9d7d84ab-5f45-4466-8636-0ee6dd018bd0"
+    },
+    {
+      "name": "💾 Save to Airtable - Keywords",
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": "content-research-base"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "content_opportunities": "={{ $('📈 Process Keyword Trends').first().json.content_opportunities.map(o => o.title).join('; ') }}",
+            "timestamp": "={{ $('📈 Process Keyword Trends').first().json.timestamp }}",
+            "top_questions": "={{ $('📈 Process Keyword Trends').first().json.long_tail_questions.map(q => q.question).slice(0, 5).join('; ') }}",
+            "trending_keywords": "={{ $('📈 Process Keyword Trends').first().json.trending_keywords.map(k => k.keyword).join(', ') }}"
+          }
+        },
+        "operation": "create",
+        "options": {},
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "keyword-opportunities"
+        }
+      },
+      "position": [
+        2608,
+        688
+      ],
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "id": "665eb6ed-ce07-47f8-9343-aca3ce809b99"
+    },
+    {
+      "name": "📝 Save to Notion",
+      "parameters": {
+        "options": {},
+        "pageId": {
+          "__rl": true,
+          "mode": "url",
+          "value": ""
+        },
+        "simple": false
+      },
+      "position": [
+        2608,
+        800
+      ],
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "id": "dd00c868-447d-4dc7-8b44-09b35bb660af"
+    },
+    {
+      "name": "📢 Send Slack Alert",
+      "parameters": {
+        "authentication": "oAuth2",
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "content-research-alerts"
+        },
+        "otherOptions": {
+          "mrkdwn": true
+        },
+        "select": "channel",
+        "text": "=🚨 **Content Research Alert**\n\n**New competitor activity detected!**\n\n📊 **Top Findings:**\n• {{ $('🔄 Process Competitor Data').first().json.content_gaps.slice(0, 3).join('\\n• ') }}\n\n📈 **Trending Keywords:**\n• {{ $('📈 Process Keyword Trends').first().json.trending_keywords.slice(0, 3).map(k => k.keyword).join('\\n• ') }}\n\n💡 **AI Recommendations:**\n{{ $('🤖 AI Content Recommendations').first().json.choices?.[0]?.message?.content?.substring(0, 300) || 'Processing recommendations...' }}...\n\n📋 **Full report saved to Airtable & Notion**\n\n*Generated: {{ new Date().toLocaleString() }}*"
+      },
+      "position": [
+        2608,
+        928
+      ],
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "webhookId": "277f81d9-9e7b-4515-8056-56c1465f8d5a",
+      "id": "f18501b0-27df-4e17-9f42-c94239c1f64d"
+    },
+    {
+      "name": "🔗 Merge All Data",
+      "parameters": {
+        "combinationMode": "multiplex",
+        "mode": "combine",
+        "options": {}
+      },
+      "position": [
+        2832,
+        752
+      ],
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "id": "40aac1d0-6b9f-4c1d-93f5-41b8aeb86833"
+    },
+    {
+      "name": "✅ Data Quality Check",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "competitor-data-exists",
+              "leftValue": "={{ $('🔄 Process Competitor Data').first().json.domain }}",
+              "operator": {
+                "operation": "notEqual",
+                "type": "string"
+              },
+              "rightValue": "N/A"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "position": [
+        2176,
+        560
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "id": "a340d2e9-ff06-495d-ba99-8bb7e2f82af8"
+    },
+    {
+      "name": "📖 Setup Instructions",
+      "parameters": {
+        "content": "## 🧠 Advanced Content Research Automation\n\n### 📋 **Configuration Required:**\n\n1. **API Credentials** (Go to Settings → Credentials):\n   - Ahrefs API Key\n   - SEMrush API Key  \n   - BuzzSumo API Key\n   - AnswerThePublic API Key\n   - OpenAI API Key\n   - Reddit OAuth\n   - Airtable Token\n   - Notion API Key\n   - Slack OAuth\n\n2. **Database Setup**:\n   - Create Airtable base: \"content-research-base\"\n   - Create tables: \"competitor-intelligence\", \"keyword-opportunities\"\n   - Create Notion database: \"content-research-database\"\n   - Create Slack channel: \"content-research-alerts\"\n\n3. **Customize Settings**:\n   - Update competitor domains in Configuration node\n   - Adjust target regions and keywords\n   - Set appropriate timeframes\n\n### 🚀 **Workflow Features:**\n- **Module 1:** Competitor Content Intelligence\n- **Module 2:** Keyword & Trend Discovery\n- **Module 3:** Audience Pain Point Extraction\n- **Module 4:** AI-Powered Recommendations\n\n### 📊 **Outputs:**\n- Airtable dashboards with live data\n- Notion database with AI insights\n- Slack alerts for immediate action\n- Error handling and data validation\n\n### ⚙️ **Execution:**\n- Runs daily automatically\n- Processes data in parallel\n- Includes retry logic for API failures\n- Generates actionable recommendations\n\n**Ready to activate? Configure your credentials and hit Execute!**",
+        "height": 1080,
+        "width": 600
+      },
+      "position": [
+        608,
+        256
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "7364626d-4dcf-46f3-a294-8c52c03bcb75"
+    },
+    {
+      "name": "📝 Prepare AI Prompt",
+      "parameters": {
+        "options": {},
+        "values": {
+          "string": [
+            {
+              "name": "user_prompt",
+              "value": "Based on this data:\n\nCompetitor Intelligence: {{ $('🔄 Process Competitor Data').first().json }}\n\nKeyword Opportunities: {{ $('📈 Process Keyword Trends').first().json }}\n\nAudience Insights: {{ $('👥 Process Audience Insights').first().json }}\n\nProvide specific recommendations for:\n1. Content topics to prioritize\n2. Content formats by region\n3. Publishing schedule\n4. Competitive advantages to leverage\n5. Audience pain points to address\n\nFormat as JSON with clear action items."
+            }
+          ]
+        }
+      },
+      "position": [
+        2176,
+        752
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "id": "17032e52-2639-4bf8-adb2-ceb0a78f1ca6"
+    },
+    {
+      "name": "🔧 OpenAI HTTP Request Alternative",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "genericAuthType": "httpHeaderAuth",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "sendHeaders": true,
+        "url": "https://api.openai.com/v1/chat/completions"
+      },
+      "position": [
+        2368,
+        864
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "ac63342b-cee3-4e56-9fc9-2992eb0f0a0c"
+    },
+    {
+      "name": "Stop and Error",
+      "parameters": {},
+      "position": [
+        2368,
+        672
+      ],
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "id": "42707c88-e969-4583-a366-4c5e8b5db944"
+    },
+    {
+      "name": "🔍 Ahrefs Competitor Data",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        },
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "target",
+              "value": "={{ $json.competitor_domains.split(',')[0] }}"
+            },
+            {
+              "name": "mode",
+              "value": "domain"
+            },
+            {
+              "name": "output",
+              "value": "json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://api.ahrefs.com/v3/site-explorer/overview"
+      },
+      "position": [
+        1520,
+        544
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "id": "9f17c021-4ead-460b-9383-7c0aaef82918"
+    }
+  ],
+  "connections": {
+    "Daily Schedule Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "📋 Configuration Settings",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "✅ Data Quality Check": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "💾 Save to Airtable - Competitors",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Stop and Error",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "❓ AnswerThePublic Questions": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "📈 Process Keyword Trends",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "👥 Process Audience Insights": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "📝 Prepare AI Prompt",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "💬 Reddit Audience Insights": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "👥 Process Audience Insights",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "💾 Save to Airtable - Competitors": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔗 Merge All Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "💾 Save to Airtable - Keywords": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔗 Merge All Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📈 BuzzSumo Content Performance": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔄 Process Competitor Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📈 Process Keyword Trends": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "📝 Prepare AI Prompt",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📊 Google Trends Data": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "📈 Process Keyword Trends",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📊 SEMrush Competitor Keywords": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔄 Process Competitor Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📋 Configuration Settings": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "📊 SEMrush Competitor Keywords",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "📈 BuzzSumo Content Performance",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "📊 Google Trends Data",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "❓ AnswerThePublic Questions",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "💬 Reddit Audience Insights",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "🔍 Ahrefs Competitor Data",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "🔄 Process Competitor Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📝 Prepare AI Prompt": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔧 OpenAI HTTP Request Alternative",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📝 Save to Notion": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔗 Merge All Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "📢 Send Slack Alert": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔗 Merge All Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "🔄 Process Competitor Data": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "✅ Data Quality Check",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "📝 Prepare AI Prompt",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "🔍 Ahrefs Competitor Data": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "🔄 Process Competitor Data",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "🔧 OpenAI HTTP Request Alternative": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "💾 Save to Airtable - Competitors",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "💾 Save to Airtable - Keywords",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "📝 Save to Notion",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "📢 Send Slack Alert",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "5979"
+  },
+  "pinData": {},
+  "versionId": "dec8d797-2add-4f6e-a60a-132280f913a1",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-15T19:38:41.164Z",
+      "createdAt": "2025-12-15T19:38:41.164Z",
+      "role": "workflow:owner",
+      "workflowId": "xCkuZByfUeGvgTbE",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

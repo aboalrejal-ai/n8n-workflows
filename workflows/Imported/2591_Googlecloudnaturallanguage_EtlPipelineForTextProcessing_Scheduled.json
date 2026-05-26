@@ -1,0 +1,278 @@
+{
+  "updatedAt": "2025-12-28T15:01:40.410Z",
+  "createdAt": "2025-12-28T15:01:40.410Z",
+  "id": "NlGCe7u5C3XySNUS",
+  "name": "ETL pipeline for text processing",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "search",
+        "searchText": "=#OnThisDay",
+        "limit": 3,
+        "additionalFields": {}
+      },
+      "name": "Twitter",
+      "type": "n8n-nodes-base.twitter",
+      "position": [
+        576,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "6e389c19-5e99-473b-a2f3-b005035acc27"
+    },
+    {
+      "parameters": {
+        "table": "tweets",
+        "columns": "text, score, magnitude",
+        "returnFields": "=*",
+        "additionalFields": {}
+      },
+      "name": "Postgres",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        1376,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "15eb112f-13d3-47eb-9c80-97cb50ad6eb1"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "tweets",
+        "fields": "text",
+        "options": {}
+      },
+      "name": "MongoDB",
+      "type": "n8n-nodes-base.mongoDb",
+      "position": [
+        768,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "dd18bafe-a170-48aa-90f0-531ba0a2285c"
+    },
+    {
+      "parameters": {
+        "channel": "tweets",
+        "text": "=🐦 NEW TWEET with sentiment score {{$json[\"score\"]}} and magnitude {{$json[\"magnitude\"]}} ⬇️\n{{$json[\"text\"]}}",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1776,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "57eee1e3-73a9-41ca-b3a4-a81d4149b703"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json[\"score\"]}}",
+              "operation": "larger"
+            }
+          ]
+        }
+      },
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1568,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "312f43e3-5ea2-45dc-8dd4-b549b810e771"
+    },
+    {
+      "parameters": {},
+      "name": "NoOp",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1776,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "61ca0060-aaa0-455d-bae7-cd59f9314069"
+    },
+    {
+      "parameters": {
+        "content": "={{$node[\"MongoDB\"].json[\"text\"]}}",
+        "options": {}
+      },
+      "name": "Google Cloud Natural Language",
+      "type": "n8n-nodes-base.googleCloudNaturalLanguage",
+      "position": [
+        976,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "263dbe55-2655-4bf6-b937-a461610dd890"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "score",
+              "value": "={{$json[\"documentSentiment\"][\"score\"]}}"
+            },
+            {
+              "name": "magnitude",
+              "value": "={{$json[\"documentSentiment\"][\"magnitude\"]}}"
+            }
+          ],
+          "string": [
+            {
+              "name": "text",
+              "value": "={{$node[\"Twitter\"].json[\"text\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1168,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "a8759b16-2051-4312-9153-607d8f287066"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 6
+            }
+          ]
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        368,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "25814ade-b654-4356-ad1c-36b5e8629a39"
+    }
+  ],
+  "connections": {
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Twitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Google Cloud Natural Language",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Twitter": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Cloud Natural Language": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "1045"
+  },
+  "pinData": {},
+  "versionId": "f456ae70-b162-4f53-9e89-8fbd49f9ed87",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-28T15:01:40.410Z",
+      "createdAt": "2025-12-28T15:01:40.410Z",
+      "role": "workflow:owner",
+      "workflowId": "NlGCe7u5C3XySNUS",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

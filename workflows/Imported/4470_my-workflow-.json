@@ -1,0 +1,80 @@
+{
+  "updatedAt": "2026-02-05T22:54:05.820Z",
+  "createdAt": "2026-01-23T16:57:20.069Z",
+  "id": "tYP0U8d-T1Cr_koZf6UC3",
+  "name": "My workflow",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "163035a6-9f0c-425a-9b23-405dd2a8a53b"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ea96f261-55fb-4333-9b1b-3d7bbcbfa20b",
+      "name": "MCP Server Trigger",
+      "webhookId": "163035a6-9f0c-425a-9b23-405dd2a8a53b"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.salesforceTool",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "3a84aae7-395e-4d5f-8f4c-527d62ffd17f",
+      "name": "Perform a query in Salesforce",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "El72ffp0tQmH4E3g",
+          "name": "Salesforce account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Perform a query in Salesforce": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "baffeccc-8cab-4809-8ce7-57fc3923da8d",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-23T16:57:20.069Z",
+      "createdAt": "2026-01-23T16:57:20.069Z",
+      "role": "workflow:owner",
+      "workflowId": "tYP0U8d-T1Cr_koZf6UC3",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

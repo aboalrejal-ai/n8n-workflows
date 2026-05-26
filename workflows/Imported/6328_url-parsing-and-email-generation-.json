@@ -1,0 +1,156 @@
+{
+  "updatedAt": "2025-12-31T22:52:58.352Z",
+  "createdAt": "2025-12-27T13:06:47.499Z",
+  "id": "sMEb1M90wjErk4BU",
+  "name": "URL Parsing and Email Generation",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        -48
+      ],
+      "id": "aacaeea0-3ba7-48f1-aa16-94af70caad28",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://hn.algolia.com/api/v1/search?query=automation&hitsPerPage=10",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -256,
+        -48
+      ],
+      "id": "0a81f091-6a58-4d83-bd34-ccd0e29d9e9a",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "sendTo": "shawnmcrowley@gmail.com",
+        "subject": "Hacker News Updates",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        -48
+      ],
+      "id": "15d44cee-a281-4519-aeeb-253e1b9f3ce5",
+      "name": "Send a message",
+      "webhookId": "a31b992e-cbf2-4c4b-bc69-06522d80738e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const hits = $input.first().json.hits;\n\nreturn hits.map(hit => ({\n  json: {\n    title: hit.title,\n    author: hit.author,\n    url: hit.url\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "94e698bf-0339-4635-9c7c-2a08fe28822f",
+      "name": "Extract Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "  let html = `<h2> Automation Reads</h2><ul>`;\n\n   const items = await $input.all();   // <-- needed\n\n   for (const item of items) {\n     html += `\n     <li style=\"margin-bottom:10px;\">\n       <a href=\"${item.json.url}\" target=\"_blank\">\n         ${item.json.title}\n       </a>\n     </li>`;\n   }\n\n   html += `</ul>`;\n\n   return [\n     {\n       json: { html },\n     },\n   ];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -48
+      ],
+      "id": "00b3431a-2906-408b-9ec8-4f3c9a22ba88",
+      "name": "HTML Email Template",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Items": {
+      "main": [
+        [
+          {
+            "node": "HTML Email Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Email Template": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "cc11d50a-52a8-40a4-8706-7762e6730bec",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-27T13:06:47.499Z",
+      "createdAt": "2025-12-27T13:06:47.499Z",
+      "role": "workflow:owner",
+      "workflowId": "sMEb1M90wjErk4BU",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

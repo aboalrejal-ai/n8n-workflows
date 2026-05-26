@@ -1,0 +1,474 @@
+{
+  "updatedAt": "2026-01-05T16:07:09.916Z",
+  "createdAt": "2025-12-10T14:41:34.218Z",
+  "id": "2bdSzAcC5vRH1wsq",
+  "name": "Generate Swagger Specs for Workflows with Webhooks",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "filters": {
+          "activeWorkflows": true
+        },
+        "requestOptions": {}
+      },
+      "id": "1f397969-aa2e-435b-b0e9-9ef66face5fc",
+      "name": "n8n",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        592,
+        608
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "n8nApi": {
+          "id": "xfUhXCvp96eUoeEy",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function safe(x) \n{\n  return x.replaceAll(\":\",\"\").replaceAll(\"/\",\"|\")\n}\n\nfunction findValidTargets(connections, sourceNode, potentialTargets) {\n  const visited = new Set();\n  const foundTargets = new Set();\n\n  function dfs(node) {\n    if (visited.has(node)) return;\n    visited.add(node);\n\n    if (potentialTargets.includes(node)) {\n      foundTargets.add(node);\n      return; // Optionally continue search if multiple paths to same target are needed\n    }\n\n    const nodeConnections = connections[node]?.main || [];\n    for (const path of nodeConnections) {\n      for (const next of path) {\n        dfs(next.node);\n      }\n    }\n  }\n\n  dfs(sourceNode);\n  return Array.from(foundTargets);\n}\n\nconst nodes = []\nfor (const item of $input.all()) \n{\n  let webhook = {\n    name: item.json.name,\n    id: item.json.id,\n    webhooks: []\n  }\n  const webhook_call = item.json.nodes.filter(node =>node.type=='n8n-nodes-base.webhook');\n  const webhook_resp = item.json.nodes.filter(node =>node.type=='n8n-nodes-base.respondToWebhook');\n  const targets = webhook_resp.map(wr => wr.name);\n  if(webhook_call.length)\n  {\n    for(const call of webhook_call)\n    {\n        const callName = call.name;\n        if(call?.parameters?.responseMode == \"responseNode\")\n        {\n            const valid = findValidTargets(item.json.connections, callName, targets);\n            call.responses = webhook_resp.filter(wr => valid.includes(wr.name))\n        }\n    }\n    \n      webhook.webhooks.push(...webhook_call);\n      nodes.push(webhook);\n  }\n}\n\nlet s = `\nswagger: \"2.0\"\ninfo:\n  title: N8N Instance API\n  description: API description in Markdown.\n  version: 1.0.0\n  \nhost: ${$('Get Swagger').first().json?.headers?.host || 'n8n.instance.com'}\n\nbasePath: /webhook\nschemes:\n  - http\n  - https\npaths:\n`\n\nfor(const node of nodes)\n{\n    const used_path = {};\n    for(const w of node.webhooks)\n    {\n      let path = '';\n      if(!(w?.parameters?.path in used_path))\n      {\n        path = w?.parameters?.path;\n        used_path[path] = true;\n      }\n\n      let produces = \"application/json\"\n      let code = 200;\n      if(w?.responses?.length)\n      {\n          for(const r of w.responses)\n          {\n              switch(r?.parameters?.respondWith)\n              {\n                case 'text':\n                  produces ='text/plain';\n                break\n                case 'redirect':\n                  produces = 'redirect';\n                  code = 301\n                break\n                case 'json':\n                  produces = 'application/json';\n                break\n              }\n          }\n      }\n      let parameters = []\n      if(w?.notes)\n      {\n        console.log({notes: w.notes})\n        const params = w?.notes?.split('\\n').filter(p => p.startsWith('@'));\n        for(const p of params)\n        {\n          const parts = p.split(' ');\n          const [position, name, type] = parts;\n          const description = parts.slice(3).join(' ');\n          console.log(p.split(' '))\n          switch(position)\n          {\n            case '@query':\n              parameters.push(`\n        - name: ${name}\n          in: ${position.replaceAll('@', '')}\n          description: ${description || 'no description'}\n          type: ${type}\n          required: true\n`)\n            break\n            case '@body':\n              parameters.push(`\n        - name: ${name}\n          in: ${position.replaceAll('@', '')}\n          description: ${description || 'no description'}\n          schema:\n            type: object\n            required:\n              - ${name}\n            properties:\n              ${name}:\n                type: ${type}\n`)\n          }\n        \n        }\n\n        if(parameters.length)\n        {\n          parameters.unshift(`\n      parameters:\n`)\n        }\n      }\n      s+=`\n  ${path ? `/${path}:` : ''}\n    ${w?.parameters?.httpMethod?.toLowerCase() || 'get'} :\n      summary: ${safe(w?.name) || safe(node.name)}.\n      description: Related to workflow [${node.id}].\n      tags:\n        - ${safe(node.name)}\n      ${parameters.join('\\n')}\n      produces:\n        - ${produces}\n      responses:\n        ${code}:\n          description: OK`\n    }\n}\n\nreturn {json:{text: s, nodes}};"
+      },
+      "id": "37b03898-8b7b-4511-8a54-b6777118ea76",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        816,
+        608
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!DOCTYPE html>\n<html>\n<head>\n  <title>Swagger UI from YAML Text</title>\n  <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist/swagger-ui.css\">\n</head>\n<body>\n  <div id=\"swagger-ui\"></div>\n\n  <script src=\"https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js\"></script>\n  <script src=\"https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js\"></script>\n  <script>\n    // Your YAML as a string (replace this with your actual variable)\n    const yamlText = `{{ $json.text }}`;\n\n    // Parse the YAML into a JavaScript object\n    const spec = jsyaml.load(yamlText);\n\n    // Initialize Swagger UI with the parsed spec\n    const ui = SwaggerUIBundle({\n      spec: spec,\n      dom_id: \"#swagger-ui\"\n    });\n  </script>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "id": "872dbe8f-a4e2-4828-98d5-73f06ae116ad",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1040,
+        512
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "path": "swagger",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "7868c867-85c4-422d-a9f3-7424af49fd14",
+      "name": "Get Swagger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        368,
+        608
+      ],
+      "webhookId": "b6873bae-3e61-4a93-9dc2-0100b497390e",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## Configure Webhooks\n\nKey Notes:  For N8N 2.0> you need to add an environment variable to docker compose to allow file access:\n    - N8N_RESTRICT_FILE_ACCESS_TO=/swagger-html  # Note - This is needed to write files in N8N 2.X\n\nAnd you need to mount a directory that has RW permission in the container:\n - ./swagger-html:/swagger-html:rw\n\nIn order to support parameter labels you have to open the note sections of every webhook and add the following text\n\n//@body field_name string description\n//@query field_name string description",
+        "height": 324,
+        "width": 816
+      },
+      "id": "30aa0403-c828-48eb-862b-4b258249c1e1",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/swagger-html/index.html",
+        "dataPropertyName": "file",
+        "options": {
+          "append": false
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        1488,
+        704
+      ],
+      "id": "0d812d24-0a91-47f9-b8e1-b4a7a28b1f54",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "data",
+        "binaryPropertyName": "file",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "index.html"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1264,
+        704
+      ],
+      "id": "4adae601-9ed7-42b8-8fa3-b712c4a60289",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "jsCode": "// YAML text from previous node\nconst yamlText = items[0].json.text;   // adjust \"text\" if your field name is different\n\n// Build the HTML page\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n  <title>Swagger UI from YAML Text</title>\n  <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist/swagger-ui.css\">\n</head>\n<body>\n  <div id=\"swagger-ui\"></div>\n\n  <script src=\"https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js\"></script>\n  <script src=\"https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js\"></script>\n  <script>\n    // Embed the YAML as a JS string (properly escaped)\n    const yamlText = ${JSON.stringify(yamlText)};\n\n    const spec = jsyaml.load(yamlText);\n    const ui = SwaggerUIBundle({\n      spec,\n      dom_id: \"#swagger-ui\"\n    });\n  </script>\n</body>\n</html>`;\n\n// Expose as json.data for the next node\nreturn [\n  {\n    json: {\n      data: html\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        704
+      ],
+      "id": "cd27860a-b2f2-4d87-bd6f-e3265cabe20b",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "n8n": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Swagger": {
+      "main": [
+        [
+          {
+            "node": "n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        []
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "4270",
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Get Swagger": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "accept": "*/*",
+            "accept-language": "*",
+            "sec-fetch-mode": "cors",
+            "user-agent": "node",
+            "accept-encoding": "gzip, deflate"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "http://localhost:5678/webhook/swagger",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "4ca3cd3c-3f8f-4363-81a7-a1f0e399c7e5",
+  "activeVersionId": "4ca3cd3c-3f8f-4363-81a7-a1f0e399c7e5",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-10T14:41:34.218Z",
+      "createdAt": "2025-12-10T14:41:34.218Z",
+      "role": "workflow:owner",
+      "workflowId": "2bdSzAcC5vRH1wsq",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-05T16:07:15.440Z",
+    "createdAt": "2025-12-30T16:29:48.198Z",
+    "versionId": "4ca3cd3c-3f8f-4363-81a7-a1f0e399c7e5",
+    "workflowId": "2bdSzAcC5vRH1wsq",
+    "nodes": [
+      {
+        "parameters": {
+          "filters": {
+            "activeWorkflows": true
+          },
+          "requestOptions": {}
+        },
+        "id": "1f397969-aa2e-435b-b0e9-9ef66face5fc",
+        "name": "n8n",
+        "type": "n8n-nodes-base.n8n",
+        "position": [
+          592,
+          608
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "n8nApi": {
+            "id": "xfUhXCvp96eUoeEy",
+            "name": "n8n account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "function safe(x) \n{\n  return x.replaceAll(\":\",\"\").replaceAll(\"/\",\"|\")\n}\n\nfunction findValidTargets(connections, sourceNode, potentialTargets) {\n  const visited = new Set();\n  const foundTargets = new Set();\n\n  function dfs(node) {\n    if (visited.has(node)) return;\n    visited.add(node);\n\n    if (potentialTargets.includes(node)) {\n      foundTargets.add(node);\n      return; // Optionally continue search if multiple paths to same target are needed\n    }\n\n    const nodeConnections = connections[node]?.main || [];\n    for (const path of nodeConnections) {\n      for (const next of path) {\n        dfs(next.node);\n      }\n    }\n  }\n\n  dfs(sourceNode);\n  return Array.from(foundTargets);\n}\n\nconst nodes = []\nfor (const item of $input.all()) \n{\n  let webhook = {\n    name: item.json.name,\n    id: item.json.id,\n    webhooks: []\n  }\n  const webhook_call = item.json.nodes.filter(node =>node.type=='n8n-nodes-base.webhook');\n  const webhook_resp = item.json.nodes.filter(node =>node.type=='n8n-nodes-base.respondToWebhook');\n  const targets = webhook_resp.map(wr => wr.name);\n  if(webhook_call.length)\n  {\n    for(const call of webhook_call)\n    {\n        const callName = call.name;\n        if(call?.parameters?.responseMode == \"responseNode\")\n        {\n            const valid = findValidTargets(item.json.connections, callName, targets);\n            call.responses = webhook_resp.filter(wr => valid.includes(wr.name))\n        }\n    }\n    \n      webhook.webhooks.push(...webhook_call);\n      nodes.push(webhook);\n  }\n}\n\nlet s = `\nswagger: \"2.0\"\ninfo:\n  title: N8N Instance API\n  description: API description in Markdown.\n  version: 1.0.0\n  \nhost: ${$('Get Swagger').first().json?.headers?.host || 'n8n.instance.com'}\n\nbasePath: /webhook\nschemes:\n  - http\n  - https\npaths:\n`\n\nfor(const node of nodes)\n{\n    const used_path = {};\n    for(const w of node.webhooks)\n    {\n      let path = '';\n      if(!(w?.parameters?.path in used_path))\n      {\n        path = w?.parameters?.path;\n        used_path[path] = true;\n      }\n\n      let produces = \"application/json\"\n      let code = 200;\n      if(w?.responses?.length)\n      {\n          for(const r of w.responses)\n          {\n              switch(r?.parameters?.respondWith)\n              {\n                case 'text':\n                  produces ='text/plain';\n                break\n                case 'redirect':\n                  produces = 'redirect';\n                  code = 301\n                break\n                case 'json':\n                  produces = 'application/json';\n                break\n              }\n          }\n      }\n      let parameters = []\n      if(w?.notes)\n      {\n        console.log({notes: w.notes})\n        const params = w?.notes?.split('\\n').filter(p => p.startsWith('@'));\n        for(const p of params)\n        {\n          const parts = p.split(' ');\n          const [position, name, type] = parts;\n          const description = parts.slice(3).join(' ');\n          console.log(p.split(' '))\n          switch(position)\n          {\n            case '@query':\n              parameters.push(`\n        - name: ${name}\n          in: ${position.replaceAll('@', '')}\n          description: ${description || 'no description'}\n          type: ${type}\n          required: true\n`)\n            break\n            case '@body':\n              parameters.push(`\n        - name: ${name}\n          in: ${position.replaceAll('@', '')}\n          description: ${description || 'no description'}\n          schema:\n            type: object\n            required:\n              - ${name}\n            properties:\n              ${name}:\n                type: ${type}\n`)\n          }\n        \n        }\n\n        if(parameters.length)\n        {\n          parameters.unshift(`\n      parameters:\n`)\n        }\n      }\n      s+=`\n  ${path ? `/${path}:` : ''}\n    ${w?.parameters?.httpMethod?.toLowerCase() || 'get'} :\n      summary: ${safe(w?.name) || safe(node.name)}.\n      description: Related to workflow [${node.id}].\n      tags:\n        - ${safe(node.name)}\n      ${parameters.join('\\n')}\n      produces:\n        - ${produces}\n      responses:\n        ${code}:\n          description: OK`\n    }\n}\n\nreturn {json:{text: s, nodes}};"
+        },
+        "id": "37b03898-8b7b-4511-8a54-b6777118ea76",
+        "name": "Code",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          816,
+          608
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "=<!DOCTYPE html>\n<html>\n<head>\n  <title>Swagger UI from YAML Text</title>\n  <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist/swagger-ui.css\">\n</head>\n<body>\n  <div id=\"swagger-ui\"></div>\n\n  <script src=\"https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js\"></script>\n  <script src=\"https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js\"></script>\n  <script>\n    // Your YAML as a string (replace this with your actual variable)\n    const yamlText = `{{ $json.text }}`;\n\n    // Parse the YAML into a JavaScript object\n    const spec = jsyaml.load(yamlText);\n\n    // Initialize Swagger UI with the parsed spec\n    const ui = SwaggerUIBundle({\n      spec: spec,\n      dom_id: \"#swagger-ui\"\n    });\n  </script>\n</body>\n</html>\n",
+          "options": {}
+        },
+        "id": "872dbe8f-a4e2-4828-98d5-73f06ae116ad",
+        "name": "Respond to Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "position": [
+          1040,
+          512
+        ],
+        "typeVersion": 1.2
+      },
+      {
+        "parameters": {
+          "path": "swagger",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "7868c867-85c4-422d-a9f3-7424af49fd14",
+        "name": "Get Swagger",
+        "type": "n8n-nodes-base.webhook",
+        "position": [
+          368,
+          608
+        ],
+        "webhookId": "b6873bae-3e61-4a93-9dc2-0100b497390e",
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "content": "## Configure Webhooks\n\nKey Notes:  For N8N 2.0> you need to add an environment variable to docker compose to allow file access:\n    - N8N_RESTRICT_FILE_ACCESS_TO=/swagger-html  # Note - This is needed to write files in N8N 2.X\n\nAnd you need to mount a directory that has RW permission in the container:\n - ./swagger-html:/swagger-html:rw\n\nIn order to support parameter labels you have to open the note sections of every webhook and add the following text\n\n//@body field_name string description\n//@query field_name string description",
+          "height": 324,
+          "width": 816
+        },
+        "id": "30aa0403-c828-48eb-862b-4b258249c1e1",
+        "name": "Sticky Note",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          224,
+          80
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "operation": "write",
+          "fileName": "/swagger-html/index.html",
+          "dataPropertyName": "file",
+          "options": {
+            "append": false
+          }
+        },
+        "type": "n8n-nodes-base.readWriteFile",
+        "typeVersion": 1.1,
+        "position": [
+          1488,
+          704
+        ],
+        "id": "0d812d24-0a91-47f9-b8e1-b4a7a28b1f54",
+        "name": "Read/Write Files from Disk"
+      },
+      {
+        "parameters": {
+          "operation": "toText",
+          "sourceProperty": "data",
+          "binaryPropertyName": "file",
+          "options": {
+            "encoding": "utf8",
+            "fileName": "index.html"
+          }
+        },
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          1264,
+          704
+        ],
+        "id": "4adae601-9ed7-42b8-8fa3-b712c4a60289",
+        "name": "Convert to File"
+      },
+      {
+        "parameters": {
+          "jsCode": "// YAML text from previous node\nconst yamlText = items[0].json.text;   // adjust \"text\" if your field name is different\n\n// Build the HTML page\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n  <title>Swagger UI from YAML Text</title>\n  <link rel=\"stylesheet\" href=\"https://unpkg.com/swagger-ui-dist/swagger-ui.css\">\n</head>\n<body>\n  <div id=\"swagger-ui\"></div>\n\n  <script src=\"https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js\"></script>\n  <script src=\"https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js\"></script>\n  <script>\n    // Embed the YAML as a JS string (properly escaped)\n    const yamlText = ${JSON.stringify(yamlText)};\n\n    const spec = jsyaml.load(yamlText);\n    const ui = SwaggerUIBundle({\n      spec,\n      dom_id: \"#swagger-ui\"\n    });\n  </script>\n</body>\n</html>`;\n\n// Expose as json.data for the next node\nreturn [\n  {\n    json: {\n      data: html\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1040,
+          704
+        ],
+        "id": "cd27860a-b2f2-4d87-bd6f-e3265cabe20b",
+        "name": "Code in JavaScript"
+      }
+    ],
+    "connections": {
+      "n8n": {
+        "main": [
+          [
+            {
+              "node": "Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Swagger": {
+        "main": [
+          [
+            {
+              "node": "n8n",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read/Write Files from Disk": {
+        "main": [
+          []
+        ]
+      },
+      "Respond to Webhook": {
+        "main": [
+          []
+        ]
+      },
+      "Convert to File": {
+        "main": [
+          [
+            {
+              "node": "Read/Write Files from Disk",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "Convert to File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "Version 4ca3cd3c",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}

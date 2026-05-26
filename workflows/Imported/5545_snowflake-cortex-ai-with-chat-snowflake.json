@@ -1,0 +1,279 @@
+{
+  "updatedAt": "2025-12-26T20:51:20.020Z",
+  "createdAt": "2025-12-19T22:02:32.001Z",
+  "id": "5MlWVqtPauKsUUnt",
+  "name": "Snowflake Cortex AI With Chat",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://CYA11755-BYA88470.snowflakecomputing.com/api/v2/cortex/inference:complete",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"mistral-large\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.chatInput }}\"\n    }\n  ],\n  \"stream\": false\n}",
+        "options": {}
+      },
+      "name": "Cortex AI Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "9cc24825-30bc-442a-9e1e-676767edbb79",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0gH9PUCd3HkmtWns",
+          "name": "Header Auth account"
+        },
+        "httpBearerAuth": {
+          "id": "YGbR2fpgYN8YZ24n",
+          "name": "Snowflake Cortex Bearer Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the AI response from Snowflake Cortex API\nconst response = $input.item.json;\n\n// Cortex API returns: { \"choices\": [{ \"messages\": \"response text\" }], \"model\": \"...\", \"usage\": {...} }\nlet aiResponse = '';\n\nif (response.choices && response.choices.length > 0) {\n  // Get the messages field from the first choice\n  aiResponse = response.choices[0].messages || response.choices[0].message?.content || '';\n} else if (response.message) {\n  aiResponse = response.message;\n} else if (typeof response === 'string') {\n  aiResponse = response;\n} else {\n  aiResponse = JSON.stringify(response, null, 2);\n}\n\nreturn {\n  response: aiResponse,\n  model: response.model || 'mistral-large',\n  tokens_used: response.usage?.total_tokens || null,\n  prompt_tokens: response.usage?.prompt_tokens || null,\n  completion_tokens: response.usage?.completion_tokens || null,\n  created: response.created || null\n};"
+      },
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "id": "d97a4401-4bea-4963-9e1a-5d240cf238c5"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "15fe1894-0a4e-44a8-9f4c-39a134df8c0f",
+      "name": "When chat message received",
+      "webhookId": "79de6399-9d09-4d41-9867-60d9e1ca0dd4"
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.response }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        608,
+        0
+      ],
+      "id": "0a827243-c838-4ab0-ad30-93a1138722ab",
+      "name": "Respond to Chat"
+    }
+  ],
+  "connections": {
+    "Cortex AI Request": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Cortex AI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "864a0089-30d1-4432-8ecc-93d35fcdcfcd",
+  "activeVersionId": "1c6b4e2b-9ff3-4134-b91f-5def6c9a92cf",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-19T22:02:32.001Z",
+      "createdAt": "2025-12-19T22:02:32.001Z",
+      "role": "workflow:owner",
+      "workflowId": "5MlWVqtPauKsUUnt",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-26T20:25:56.921Z",
+    "createdAt": "2025-12-26T20:09:15.410Z",
+    "versionId": "1c6b4e2b-9ff3-4134-b91f-5def6c9a92cf",
+    "workflowId": "5MlWVqtPauKsUUnt",
+    "nodes": [
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://CYA11755-BYA88470.snowflakecomputing.com/api/v2/cortex/inference:complete",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpBearerAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"model\": \"mistral-large\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.chatInput }}\"\n    }\n  ],\n  \"stream\": false\n}",
+          "options": {}
+        },
+        "name": "Cortex AI Request",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          192,
+          0
+        ],
+        "id": "9cc24825-30bc-442a-9e1e-676767edbb79",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "0gH9PUCd3HkmtWns",
+            "name": "Header Auth account"
+          },
+          "httpBearerAuth": {
+            "id": "YGbR2fpgYN8YZ24n",
+            "name": "Bearer Auth account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract the AI response from Snowflake Cortex API\nconst response = $input.item.json;\n\n// Cortex API returns: { \"choices\": [{ \"messages\": \"response text\" }], \"model\": \"...\", \"usage\": {...} }\nlet aiResponse = '';\n\nif (response.choices && response.choices.length > 0) {\n  // Get the messages field from the first choice\n  aiResponse = response.choices[0].messages || response.choices[0].message?.content || '';\n} else if (response.message) {\n  aiResponse = response.message;\n} else if (typeof response === 'string') {\n  aiResponse = response;\n} else {\n  aiResponse = JSON.stringify(response, null, 2);\n}\n\nreturn {\n  response: aiResponse,\n  model: response.model || 'mistral-large',\n  tokens_used: response.usage?.total_tokens || null,\n  prompt_tokens: response.usage?.prompt_tokens || null,\n  completion_tokens: response.usage?.completion_tokens || null,\n  created: response.created || null\n};"
+        },
+        "name": "Parse Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          400,
+          0
+        ],
+        "id": "d97a4401-4bea-4963-9e1a-5d240cf238c5"
+      },
+      {
+        "parameters": {
+          "options": {
+            "responseMode": "responseNodes"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          0,
+          0
+        ],
+        "id": "15fe1894-0a4e-44a8-9f4c-39a134df8c0f",
+        "name": "When chat message received",
+        "webhookId": "79de6399-9d09-4d41-9867-60d9e1ca0dd4"
+      },
+      {
+        "parameters": {
+          "message": "={{ $json.response }}",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chat",
+        "typeVersion": 1,
+        "position": [
+          608,
+          0
+        ],
+        "id": "0a827243-c838-4ab0-ad30-93a1138722ab",
+        "name": "Respond to Chat"
+      }
+    ],
+    "connections": {
+      "Cortex AI Request": {
+        "main": [
+          [
+            {
+              "node": "Parse Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "Cortex AI Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Response": {
+        "main": [
+          [
+            {
+              "node": "Respond to Chat",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "Version 1c6b4e2b",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-26T20:51:07.034Z",
+      "createdAt": "2025-12-26T20:51:07.034Z",
+      "id": "fCpuIwo0eJkcPKC3",
+      "name": "snowflake"
+    },
+    {
+      "updatedAt": "2025-12-26T20:51:11.324Z",
+      "createdAt": "2025-12-26T20:51:11.324Z",
+      "id": "tVt5TG2MWeYOqByE",
+      "name": "cortex"
+    },
+    {
+      "updatedAt": "2025-12-26T20:51:15.268Z",
+      "createdAt": "2025-12-26T20:51:15.268Z",
+      "id": "8G52ne7ag1PlaHXO",
+      "name": "ai"
+    }
+  ]
+}

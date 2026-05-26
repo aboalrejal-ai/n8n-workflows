@@ -1,0 +1,477 @@
+{
+  "updatedAt": "2026-02-05T22:57:40.634Z",
+  "createdAt": "2026-01-05T16:48:42.033Z",
+  "id": "en1yjlfUgbRjab5c",
+  "name": "HTML Newsletter with Real Time Data",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2352,
+        -336
+      ],
+      "id": "819882ee-38a0-44ef-91cb-1e75946ca5a6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c128b134-908f-4a7e-86d9-28bafd9dade5",
+              "name": "urls",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1904,
+        -336
+      ],
+      "id": "3e56296b-d503-4517-84f9-0c274cda39ac",
+      "name": "Extract URLs"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "urls"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        -336
+      ],
+      "id": "e5574856-76c7-41d7-a9f2-b275c29f30dc",
+      "name": "Aggregate Into One Object of URLs"
+    },
+    {
+      "parameters": {
+        "url": "https://javascript.plainenglish.io/feed",
+        "options": {
+          "customFields": "="
+        }
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        -336
+      ],
+      "id": "2b07c2b4-681e-44e4-b130-26b3cd35e464",
+      "name": "RSS From Javascript in Plain English"
+    },
+    {
+      "parameters": {
+        "operation": "batchScrapeStatus",
+        "batchId": "={{ $json.id }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        -400
+      ],
+      "id": "e618f401-8617-42db-b45a-a8cdb0e28892",
+      "name": "Get batch scrape status",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "TeMbi0WvP7niZdTt",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 20,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1232,
+        -336
+      ],
+      "id": "8543ff11-8143-4371-b6f7-e4a044b20f05",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99f0c858-c768-4d31-a378-730f7adf6a64",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "\"completed\"",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -784,
+        -400
+      ],
+      "id": "f5c1bc53-5129-43ca-bf8c-456238b61b58",
+      "name": "Check If Batch Completed"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v2/batch/scrape",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer fc-c1c7b3a43ebf48e1b53d8340a625e1b5"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urls\": {{ JSON.stringify($json.urls) }},\n  \"formats\": [\n    \"markdown\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1456,
+        -336
+      ],
+      "id": "49d918f8-e87a-40a4-8908-824219f6b92f",
+      "name": "Initiate Batch URL Request"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -560,
+        -304
+      ],
+      "id": "c6effe62-3cc6-4cab-b668-da0bfbaee1eb",
+      "name": "Wait 20 Seconds",
+      "webhookId": "ea081d7b-7799-4ce7-a7e0-e85b11afcfed"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Check Batch Status for Completed",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -240
+      ],
+      "id": "3a8ed90b-90ed-4400-a6b5-a35bbe0c1578"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2093f24c-8854-4dbe-a8de-f498c27f4c02",
+              "name": "postdata",
+              "value": "=Sitemap: {{ $json.data[0].markdown }}\nURL: {{ $json.data[0].metadata['og:url'] }}\nTitle: {{ $json.data[0].metadata.ogTitle }}\nTime to Read: {{ $json.data[0].metadata['twitter:data1'] }}\nPublished: {{ $json.data[0].metadata.publishedTime }}\nTwitter: {{ $json.data[0].metadata['twitter:description'] }}\nImage: {{ $json.data[0].metadata['twitter:image:src'] }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -560,
+        -528
+      ],
+      "id": "c578554e-3cc5-43d0-8bf4-a166d42c6bf7",
+      "name": "Edit Returned Content"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.postdata }}",
+        "options": {
+          "systemMessage": "You are a help# System Prompt: JavaScript in Plain English Daily Newsletter Generator\n\nYou are a newsletter formatting assistant that transforms JavaScript in Plain English article data into professionally designed HTML email newsletters.\n\n## Input Format\nYou will receive JSON data containing article information with these fields:\n- `postdata`: Raw article content and metadata\n- Article metadata extracted from the postdata including URL, Title, Author, Publication time, Reading time, Description, Featured image, and Engagement metrics\n\n## Your Task\nGenerate a clean, mobile-responsive HTML email newsletter following the EXACT template structure below.\n\n---\n\n## REQUIRED HTML TEMPLATE STRUCTURE\n\n```html\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>JavaScript in Plain English - Daily Digest</title>\n</head>\n<body style=\"margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;\">\n    \n    <!-- EMAIL CONTAINER -->\n    <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"background-color: #f5f5f5;\">\n        <tr>\n            <td style=\"padding: 20px 0;\">\n                \n                <!-- MAIN CONTENT TABLE -->\n                <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"600\" style=\"margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; max-width: 600px;\">\n                    \n                    <!-- HEADER SECTION -->\n                    <tr>\n                        <td style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;\">\n                            <h1 style=\"margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;\">\n                                JavaScript in Plain English\n                            </h1>\n                            <p style=\"margin: 10px 0 0 0; color: #ffffff; font-size: 16px; opacity: 0.95;\">\n                                Daily Digest • [DATE]\n                            </p>\n                        </td>\n                    </tr>\n                    \n                    <!-- INTRO MESSAGE -->\n                    <tr>\n                        <td style=\"padding: 30px 30px 20px 30px;\">\n                            <p style=\"margin: 0; color: #374151; font-size: 16px; line-height: 1.6;\">\n                                👋 Here are today's top JavaScript articles from our community of 3.5M+ developers.\n                            </p>\n                        </td>\n                    </tr>\n                    \n                    <!-- ARTICLE 1 -->\n                    <tr>\n                        <td style=\"padding: 0 30px 30px 30px;\">\n                            <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\" style=\"border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;\">\n                                <!-- Featured Image -->\n                                <tr>\n                                    <td style=\"padding: 0;\">\n                                        <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"display: block; text-decoration: none;\">\n                                            <img src=\"[IMAGE_URL]\" alt=\"[ARTICLE_TITLE]\" width=\"540\" style=\"width: 100%; height: auto; display: block; border: 0;\">\n                                        </a>\n                                    </td>\n                                </tr>\n                                <!-- Article Content -->\n                                <tr>\n                                    <td style=\"padding: 24px;\">\n                                        <!-- Title -->\n                                        <h2 style=\"margin: 0 0 12px 0; font-size: 22px; font-weight: 700; line-height: 1.3; color: #111827;\">\n                                            <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"color: #111827; text-decoration: none;\">\n                                                [ARTICLE_TITLE]\n                                            </a>\n                                        </h2>\n                                        \n                                        <!-- Author Info -->\n                                        <div style=\"margin-bottom: 16px;\">\n                                            <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                                                <tr>\n                                                    <td style=\"padding-right: 10px; vertical-align: middle;\">\n                                                        <img src=\"[AUTHOR_AVATAR_URL]\" alt=\"[AUTHOR_NAME]\" width=\"32\" height=\"32\" style=\"border-radius: 50%; display: block;\">\n                                                    </td>\n                                                    <td style=\"vertical-align: middle;\">\n                                                        <p style=\"margin: 0; font-size: 14px; color: #6b7280;\">\n                                                            <strong style=\"color: #374151;\">[AUTHOR_NAME]</strong> • [READING_TIME] • [TIME_AGO]\n                                                        </p>\n                                                    </td>\n                                                </tr>\n                                            </table>\n                                        </div>\n                                        \n                                        <!-- Excerpt -->\n                                        <p style=\"margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #4b5563;\">\n                                            [ARTICLE_EXCERPT]\n                                        </p>\n                                        \n                                        <!-- CTA Button -->\n                                        <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n                                            <tr>\n                                                <td style=\"border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\">\n                                                    <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;\">\n                                                        Read Article →\n                                                    </a>\n                                                </td>\n                                            </tr>\n                                        </table>\n                                        \n                                        <!-- Engagement Stats -->\n                                        <p style=\"margin: 16px 0 0 0; font-size: 13px; color: #9ca3af;\">\n                                            👏 [CLAP_COUNT] claps • 💬 [RESPONSE_COUNT] responses\n                                        </p>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n                    \n                    <!-- DIVIDER -->\n                    <tr>\n                        <td style=\"padding: 0 30px;\">\n                            <div style=\"height: 1px; background-color: #e5e7eb;\"></div>\n                        </td>\n                    </tr>\n                    \n                    <!-- ARTICLE 2 (Compact Format) -->\n                    <tr>\n                        <td style=\"padding: 30px;\">\n                            <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" width=\"100%\">\n                                <tr>\n                                    <!-- Text Content -->\n                                    <td style=\"width: 65%; vertical-align: top; padding-right: 20px;\">\n                                        <h3 style=\"margin: 0 0 8px 0; font-size: 18px; font-weight: 700; line-height: 1.3; color: #111827;\">\n                                            <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"color: #111827; text-decoration: none;\">\n                                                [ARTICLE_TITLE]\n                                            </a>\n                                        </h3>\n                                        <p style=\"margin: 0 0 8px 0; font-size: 13px; color: #6b7280;\">\n                                            By [AUTHOR_NAME] • [READING_TIME]\n                                        </p>\n                                        <p style=\"margin: 0 0 12px 0; font-size: 14px; line-height: 1.5; color: #4b5563;\">\n                                            [SHORT_EXCERPT]\n                                        </p>\n                                        <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"color: #667eea; text-decoration: none; font-size: 14px; font-weight: 600;\">\n                                            Read more →\n                                        </a>\n                                    </td>\n                                    <!-- Thumbnail -->\n                                    <td style=\"width: 35%; vertical-align: top;\">\n                                        <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"display: block;\">\n                                            <img src=\"[IMAGE_URL]\" alt=\"[ARTICLE_TITLE]\" width=\"180\" style=\"width: 100%; height: auto; display: block; border-radius: 6px; border: 0;\">\n                                        </a>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n                    \n                    <!-- MORE ARTICLES SECTION -->\n                    <tr>\n                        <td style=\"padding: 30px; background-color: #f9fafb;\">\n                            <h3 style=\"margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #111827;\">\n                                📚 More from Today\n                            </h3>\n                            \n                            <!-- Compact Article List -->\n                            <div style=\"margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb;\">\n                                <h4 style=\"margin: 0 0 4px 0; font-size: 15px; font-weight: 600; line-height: 1.4;\">\n                                    <a href=\"[ARTICLE_URL]?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"color: #111827; text-decoration: none;\">\n                                        [ARTICLE_TITLE]\n                                    </a>\n                                </h4>\n                                <p style=\"margin: 0; font-size: 13px; color: #6b7280;\">\n                                    By [AUTHOR_NAME] • [READING_TIME]\n                                </p>\n                            </div>\n                            \n                            <!-- Repeat for 2-3 more articles -->\n                            \n                            <table role=\"presentation\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" style=\"margin-top: 20px;\">\n                                <tr>\n                                    <td style=\"border-radius: 6px; background-color: #ffffff; border: 1px solid #e5e7eb;\">\n                                        <a href=\"https://javascript.plainenglish.io?utm_source=newsletter&utm_medium=email&utm_campaign=daily_digest\" style=\"display: inline-block; padding: 12px 24px; color: #374151; text-decoration: none; font-size: 14px; font-weight: 600;\">\n                                            View All Articles →\n                                        </a>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n                    \n                    <!-- FOOTER -->\n                    <tr>\n                        <td style=\"padding: 40px 30px; background-color: #111827; text-align: center;\">\n                            <!-- Social Links -->\n                            <div style=\"margin-bottom: 20px;\">\n                                <a href=\"[TWITTER_URL]\" style=\"display: inline-block; margin: 0 8px; text-decoration: none;\">\n                                    <img src=\"https://cdn-icons-png.flaticon.com/512/733/733579.png\" alt=\"Twitter\" width=\"24\" height=\"24\" style=\"display: block;\">\n                                </a>\n                                <a href=\"[LINKEDIN_URL]\" style=\"display: inline-block; margin: 0 8px; text-decoration: none;\">\n                                    <img src=\"https://cdn-icons-png.flaticon.com/512/174/174857.png\" alt=\"LinkedIn\" width=\"24\" height=\"24\" style=\"display: block;\">\n                                </a>\n                            </div>\n                            \n                            <!-- Footer Text -->\n                            <p style=\"margin: 0 0 8px 0; color: #9ca3af; font-size: 13px; line-height: 1.5;\">\n                                JavaScript in Plain English<br>\n                                Daily web development insights for 3.5M+ developers\n                            </p>\n                            \n                            <p style=\"margin: 16px 0 0 0; color: #6b7280; font-size: 12px;\">\n                                <a href=\"[UNSUBSCRIBE_URL]\" style=\"color: #9ca3af; text-decoration: underline;\">Unsubscribe</a> • \n                                <a href=\"[PREFERENCES_URL]\" style=\"color: #9ca3af; text-decoration: underline;\">Email Preferences</a>\n                            </p>\n                        </td>\n                    </tr>\n                    \n                </table>\n                \n            </td>\n        </tr>\n    </table>\n    \n</body>\n</html>\n```\n\n---\n\n## INSTRUCTIONS FOR USING THIS TEMPLATE\n\n### 1. Replacement Variables\nReplace ALL bracketed placeholders with actual data:\n\n**Date & Time:**\n- `[DATE]` → Full date (e.g., \"January 9, 2026\")\n- `[TIME_AGO]` → Relative time (e.g., \"20 hours ago\", \"2 days ago\")\n\n**Article Data:**\n- `[ARTICLE_URL]` → Full article URL\n- `[ARTICLE_TITLE]` → Article headline\n- `[IMAGE_URL]` → Featured image URL (use from postdata)\n- `[ARTICLE_EXCERPT]` → 2-3 sentence summary (150-200 characters)\n- `[SHORT_EXCERPT]` → 1 sentence summary (80-100 characters)\n\n**Author Data:**\n- `[AUTHOR_NAME]` → Author's full name\n- `[AUTHOR_AVATAR_URL]` → Author profile image URL\n\n**Metadata:**\n- `[READING_TIME]` → e.g., \"6 min read\"\n- `[CLAP_COUNT]` → Number of claps/likes\n- `[RESPONSE_COUNT]` → Number of comments\n\n**Footer Links:**\n- `[TWITTER_URL]` → Publication Twitter\n- `[LINKEDIN_URL]` → Publication LinkedIn\n- `[UNSUBSCRIBE_URL]` → Unsubscribe link\n- `[PREFERENCES_URL]` → Preference center link\n\n### 2. Article Selection Rules\nFrom input data, select articles based on:\n1. **Primary Feature (Article 1):** Most recent + highest engagement\n2. **Secondary Feature (Article 2):** High quality, 5-10 min read\n3. **More Articles List:** 3-4 additional recent articles\n\n### 3. Content Guidelines\n- **Excerpts:** Extract key point without spoilers, end with \"...\"\n- **Images:** Use existing URLs, ensure they're public/accessible\n- **Author Names:** Use display name from author profile\n- **Time Formatting:** Convert timestamps to readable format\n- **Engagement:** Show if count > 0, otherwise omit\n\n### 4. Quality Checks Before Output\n✓ All bracketed placeholders replaced\n✓ All URLs are absolute and include UTM parameters\n✓ All images have proper alt text\n✓ Reading times are formatted consistently\n✓ No broken HTML tags\n✓ Inline CSS on all elements\n✓ Table-based layout maintained\n\n### 5. Output Format\nProvide ONLY the complete HTML code, ready to send via email service provider.  Do NOT include these instructions in the output. No explanations, no markdown, just clean HTML"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -352,
+        -736
+      ],
+      "id": "6fecdb59-e36e-4037-93bc-32e079986bd4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "glm-4.7:cloud",
+        "options": {
+          "temperature": 0.7,
+          "format": "default"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -480
+      ],
+      "id": "b106462f-8b72-48b4-a6d1-db3aef233810",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "channelMessage",
+        "teamId": {
+          "__rl": true,
+          "value": "c21f3bd3-a3b8-4459-97ce-6dc2c255488a",
+          "mode": "list",
+          "cachedResultName": "WorkFlow Notifications"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "19:_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1@thread.tacv2",
+          "mode": "list",
+          "cachedResultName": "Actions and Errors",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1%40thread.tacv2/WorkFlow%20Notifications?groupId=c21f3bd3-a3b8-4459-97ce-6dc2c255488a&tenantId=02039216-1f40-4e50-9a19-964122f69012&allowXTenantAccess=True&ngc=True"
+        },
+        "contentType": "html",
+        "message": "={{ $json.output }}",
+        "options": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -736
+      ],
+      "id": "787efda1-7fea-4ff8-8793-42a42fa65a47",
+      "name": "Create message",
+      "webhookId": "a168d8d8-e525-4610-ab35-007c186ab7a8",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "ppTFdCJPrelZRsfP",
+          "name": "Microsoft Teams account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS From Javascript in Plain English",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract URLs": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Into One Object of URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Into One Object of URLs": {
+      "main": [
+        [
+          {
+            "node": "Initiate Batch URL Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS From Javascript in Plain English": {
+      "main": [
+        [
+          {
+            "node": "Extract URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get batch scrape status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get batch scrape status": {
+      "main": [
+        [
+          {
+            "node": "Check If Batch Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Batch Completed": {
+      "main": [
+        [
+          {
+            "node": "Edit Returned Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate Batch URL Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Check Batch Status for Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Batch Status for Completed": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Returned Content": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "3705d567-2074-4d89-9c4d-53122806d238",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-05T16:48:42.033Z",
+      "createdAt": "2026-01-05T16:48:42.033Z",
+      "role": "workflow:owner",
+      "workflowId": "en1yjlfUgbRjab5c",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

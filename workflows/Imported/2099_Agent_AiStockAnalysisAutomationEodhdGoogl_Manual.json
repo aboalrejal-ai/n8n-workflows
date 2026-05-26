@@ -1,0 +1,7669 @@
+{
+  "updatedAt": "2026-02-05T23:01:16.094Z",
+  "createdAt": "2026-01-08T14:32:39.044Z",
+  "id": "K0JZPGQRe-jTTVFEwunI4",
+  "name": "AI Stock Analysis Automation (EODHD + Google Sheets + AI)",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "name": "When clicking ‘Execute workflow’",
+      "parameters": {},
+      "position": [
+        1856,
+        640
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "id": "ff04316c-d564-4be5-81db-0d33fb6c67f8"
+    },
+    {
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZU6vdyy5jG2m2v3I",
+          "name": "Google Sheets account"
+        }
+      },
+      "name": "Get row(s) in sheet",
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "cachedResultName": "Portfolio_Performance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ksZvZR0cuQHYJ0-W0FUZUNm3rwdudlZxckLIUcgY_r8/edit?usp=drivesdk",
+          "mode": "list",
+          "value": "1ksZvZR0cuQHYJ0-W0FUZUNm3rwdudlZxckLIUcgY_r8"
+        },
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "cachedResultName": "Holdings_2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ksZvZR0cuQHYJ0-W0FUZUNm3rwdudlZxckLIUcgY_r8/edit#gid=231712198",
+          "mode": "list",
+          "value": 231712198
+        }
+      },
+      "position": [
+        2080,
+        640
+      ],
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "id": "f95981a5-a7fd-4391-b692-b84d6f0fab3c"
+    },
+    {
+      "name": "Loop Over Items",
+      "parameters": {
+        "options": {}
+      },
+      "position": [
+        2304,
+        640
+      ],
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "id": "f76740bf-68ef-4bc3-b3bd-1f9fd97e4bcd"
+    },
+    {
+      "alwaysOutputData": true,
+      "name": "HTTP Request1",
+      "parameters": {
+        "options": {},
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "2023-01-01"
+            },
+            {
+              "name": "to",
+              "value": "2025-12-30"
+            },
+            {
+              "name": "period",
+              "value": "d"
+            },
+            {
+              "name": "fmt",
+              "value": "json"
+            },
+            {
+              "name": "api_token",
+              "value": " 6962c4de96b756.96575586"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "=https://eodhd.com/api/eod/{{ $json.General.Code }}.US"
+      },
+      "position": [
+        2752,
+        432
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "id": "844f4e29-080c-4211-8556-884148c5461a"
+    },
+    {
+      "name": "Merge",
+      "parameters": {},
+      "position": [
+        3200,
+        512
+      ],
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "id": "fc5bbd1e-b2e6-41c6-b9e3-82d200e28320"
+    },
+    {
+      "name": "Code in JavaScript",
+      "parameters": {
+        "jsCode": "// n8n Code node (WAF-safe / ES5)\n// Output: 1 item with fundamentals + OHLCV metrics + growth_potential_score\n// No modern JS: no =>, no ?. , no ??, no backticks, no spread\n\nfunction isArray(x) {\n  return Object.prototype.toString.call(x) === '[object Array]';\n}\nfunction toNum(x) {\n  var n = Number(x);\n  return (isNaN(n) || !isFinite(n)) ? null : n;\n}\nfunction safeStr(x) {\n  if (x === undefined || x === null) return '';\n  return String(x);\n}\nfunction mean(arr) {\n  if (!arr || !arr.length) return null;\n  var s = 0, c = 0;\n  for (var i = 0; i < arr.length; i++) {\n    if (arr[i] !== null) { s += arr[i]; c++; }\n  }\n  return c ? (s / c) : null;\n}\nfunction std(arr) {\n  if (!arr || arr.length < 2) return null;\n  var m = mean(arr);\n  if (m === null) return null;\n  var s = 0, c = 0;\n  for (var i = 0; i < arr.length; i++) {\n    if (arr[i] !== null) {\n      var d = arr[i] - m;\n      s += d * d;\n      c++;\n    }\n  }\n  if (c < 2) return null;\n  return Math.sqrt(s / (c - 1));\n}\nfunction sma(values, period) {\n  if (!values || values.length < period) return null;\n  var sum = 0;\n  for (var i = values.length - period; i < values.length; i++) sum += values[i];\n  return sum / period;\n}\nfunction rsi(values, period) {\n  if (!values || values.length < period + 1) return null;\n  var gains = 0;\n  var losses = 0;\n  for (var i = values.length - period; i < values.length; i++) {\n    var ch = values[i] - values[i - 1];\n    if (ch >= 0) gains += ch;\n    else losses += (-ch);\n  }\n  var avgGain = gains / period;\n  var avgLoss = losses / period;\n  if (avgLoss === 0) return 100;\n  var rs = avgGain / avgLoss;\n  return 100 - (100 / (1 + rs));\n}\nfunction pct(a, b) {\n  if (a === null || b === null || b === 0) return null;\n  return ((a / b) - 1) * 100;\n}\nfunction clamp(x, a, b) {\n  return Math.max(a, Math.min(b, x));\n}\n\n// ------------------------------------------------------------\n// 1) Find fundamentals object (the one that contains General/Highlights)\n// ------------------------------------------------------------\nfunction findFundamentalsObject(allItems) {\n  for (var i = 0; i < allItems.length; i++) {\n    var j = allItems[i].json;\n    if (j && j.General && j.Highlights) return j;\n  }\n  // sometimes fundamentals nested\n  for (var k = 0; k < allItems.length; k++) {\n    var jj = allItems[k].json;\n    if (jj && jj.fundamentals && jj.fundamentals.General) return jj.fundamentals;\n  }\n  return null;\n}\n\n// ------------------------------------------------------------\n// 2) Collect OHLCV candles\n//    Supports these cases:\n//    A) items[] are candles (each item.json has date/open/high/low/close)\n//    B) one item.json has ohlc array: { ohlc: [...] }\n// ------------------------------------------------------------\nfunction collectCandles(allItems) {\n  // Case B: already aggregated\n  for (var i = 0; i < allItems.length; i++) {\n    var j = allItems[i].json;\n    if (j && j.ohlc && isArray(j.ohlc) && j.ohlc.length) return j.ohlc;\n  }\n\n  // Case A: items are candles\n  var candles = [];\n  for (var k = 0; k < allItems.length; k++) {\n    var c = allItems[k].json;\n    if (c && c.date !== undefined && c.close !== undefined) {\n      candles.push(c);\n    }\n  }\n  if (candles.length) return candles;\n\n  return null;\n}\n\n// ------------------------------------------------------------\n// 3) Extract fundamentals fields from your confirmed structure\n// ------------------------------------------------------------\nfunction extractFundamentals(f) {\n  var gen = f.General || {};\n  var hi = f.Highlights || {};\n  var val = f.Valuation || {};\n  var tech = f.Technicals || {};\n\n  var out = {\n    ticker: gen.Code || '',\n    symbol: gen.PrimaryTicker || '',\n    sector: gen.Sector || null,\n    industry: gen.Industry || null,\n\n    market_cap: toNum(hi.MarketCapitalization),\n    pe: toNum(hi.PERatio),\n    forward_pe: toNum(val.ForwardPE),\n    eps: toNum(hi.EarningsShare),\n    eps_ttm: toNum(hi.DilutedEpsTTM),\n    peg: toNum(hi.PEGRatio),\n\n    revenue_ttm: toNum(hi.RevenueTTM),\n    gross_profit_ttm: toNum(hi.GrossProfitTTM),\n\n    q_rev_growth_yoy: (hi.QuarterlyRevenueGrowthYOY !== undefined) ? toNum(hi.QuarterlyRevenueGrowthYOY) : null,\n    q_eps_growth_yoy: (hi.QuarterlyEarningsGrowthYOY !== undefined) ? toNum(hi.QuarterlyEarningsGrowthYOY) : null,\n\n    beta: toNum(tech.Beta),\n    ma_50d: toNum(tech[\"50DayMA\"]),\n    ma_200d: toNum(tech[\"200DayMA\"]),\n    week52_high: toNum(tech[\"52WeekHigh\"]),\n    week52_low: toNum(tech[\"52WeekLow\"])\n  };\n\n  return out;\n}\n\n// ------------------------------------------------------------\n// 4) Compute OHLCV technical metrics\n// ------------------------------------------------------------\nfunction computeTechnicals(candles) {\n  // sort by date asc\n  candles.sort(function(a, b) {\n    return safeStr(a.date).localeCompare(safeStr(b.date));\n  });\n\n  var closes = [];\n  var lows = [];\n  var highs = [];\n  var vols = [];\n  var dates = [];\n\n  for (var i = 0; i < candles.length; i++) {\n    var c = toNum(candles[i].close);\n    if (c === null) continue;\n    closes.push(c);\n    lows.push(toNum(candles[i].low));\n    highs.push(toNum(candles[i].high));\n    vols.push(toNum(candles[i].volume));\n    dates.push(safeStr(candles[i].date));\n  }\n\n  if (closes.length < 60) {\n    return { error: 'Not enough OHLC data', closes_count: closes.length };\n  }\n\n  var lastClose = closes[closes.length - 1];\n  var lastDate = dates[dates.length - 1];\n\n  // returns\n  function closeAt(daysAgo) {\n    var idx = closes.length - 1 - daysAgo;\n    if (idx < 0) return null;\n    return closes[idx];\n  }\n\n  var ret30 = pct(lastClose, closeAt(30));\n  var ret90 = pct(lastClose, closeAt(90));\n\n  // support/resistance 30\n  var start30 = Math.max(0, closes.length - 30);\n  var support30 = null;\n  var resist30 = null;\n  for (var j = start30; j < closes.length; j++) {\n    var lo = lows[j];\n    var hi = highs[j];\n    if (lo !== null) support30 = (support30 === null) ? lo : Math.min(support30, lo);\n    if (hi !== null) resist30 = (resist30 === null) ? hi : Math.max(resist30, hi);\n  }\n\n  // volatility (annualized %)\n  var rets = [];\n  for (var k = 1; k < closes.length; k++) {\n    rets.push((closes[k] / closes[k - 1]) - 1);\n  }\n  var volDaily = std(rets);\n  var volAnnPct = (volDaily === null) ? null : (volDaily * Math.sqrt(252) * 100);\n\n  // RSI/SMA\n  var rsi14 = rsi(closes, 14);\n  var sma20 = sma(closes, 20);\n  var sma50 = sma(closes, 50);\n  var sma200 = sma(closes, 200);\n\n  return {\n    date: lastDate,\n    last_close: lastClose,\n    return_30d_pct: ret30,\n    return_90d_pct: ret90,\n    volatility_ann_pct: volAnnPct,\n    rsi_14: rsi14,\n    sma_20: sma20,\n    sma_50: sma50,\n    sma_200: sma200,\n    support_30d: support30,\n    resistance_30d: resist30\n  };\n}\n\n// ------------------------------------------------------------\n// 5) Growth potential score (0-100) from fundamentals + technicals\n// ------------------------------------------------------------\nfunction growthScore(fund, tech) {\n  var score = 50;\n\n  // Growth (YOY)\n  if (fund.q_rev_growth_yoy !== null) {\n    // 0.18 -> 18 points max 25\n    score += clamp(fund.q_rev_growth_yoy * 100, 0, 25);\n  }\n  if (fund.q_eps_growth_yoy !== null) {\n    score += clamp(fund.q_eps_growth_yoy * 100 * 0.5, 0, 12);\n  }\n\n  // Valuation penalty\n  if (fund.pe !== null) {\n    if (fund.pe > 45) score -= 12;\n    else if (fund.pe > 35) score -= 7;\n    else if (fund.pe < 12) score += 5;\n  }\n\n  // Trend\n  if (tech.sma_50 !== null && tech.last_close > tech.sma_50) score += 6;\n  if (tech.sma_200 !== null && tech.last_close > tech.sma_200) score += 6;\n  if (tech.sma_20 !== null && tech.last_close > tech.sma_20) score += 3;\n\n  // RSI sanity\n  if (tech.rsi_14 !== null) {\n    if (tech.rsi_14 > 75) score -= 5;\n    else if (tech.rsi_14 < 25) score -= 2;\n  }\n\n  // Volatility penalty\n  if (tech.volatility_ann_pct !== null) {\n    if (tech.volatility_ann_pct > 45) score -= 10;\n    else if (tech.volatility_ann_pct > 30) score -= 5;\n  }\n\n  return Math.round(clamp(score, 0, 100));\n}\n\n// ------------------------------------------------------------\n// MAIN\n// ------------------------------------------------------------\nvar fObj = findFundamentalsObject(items);\nvar candles = collectCandles(items);\n\nif (!fObj) {\n  return [{ json: { error: 'Fundamentals not found in items. Check merge.', hint: 'Make sure the fundamentals item with General/Highlights is included.' } }];\n}\nif (!candles) {\n  return [{ json: { error: 'OHLCV candles not found in items.', hint: 'Make sure OHLC items contain date/close or aggregate as {ohlc:[...]}' } }];\n}\n\nvar fundOut = extractFundamentals(fObj);\nvar techOut = computeTechnicals(candles);\n\nif (techOut.error) {\n  return [{ json: { error: techOut.error, closes_count: techOut.closes_count || 0, ticker: fundOut.ticker, symbol: fundOut.symbol } }];\n}\n\nvar gps = growthScore(fundOut, techOut);\n\n// Final payload\nreturn [{\n  json: {\n    ticker: fundOut.ticker,\n    symbol: fundOut.symbol,\n    date: techOut.date,\n    fundamentals: fundOut,\n    technical: techOut,\n    growth_potential_score: gps\n  }\n}];\n"
+      },
+      "position": [
+        3424,
+        512
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "d62ea2ee-4703-41dc-9f9a-a8791a59bc4e"
+    },
+    {
+      "name": "Code in JavaScript1",
+      "parameters": {
+        "jsCode": "var arr = [];\nfor (var i = 0; i < items.length; i++) {\n  arr.push(items[i].json);\n}\n\n// Ordena por fecha asc (opcional, pero recomendado)\narr.sort(function(a, b) {\n  return String(a.date).localeCompare(String(b.date));\n});\n\nreturn [{ json: { ohlc: arr, ohlc_len: arr.length } }];\n"
+      },
+      "position": [
+        2976,
+        432
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "6da531e0-0a9a-4447-9c9a-2242b454a0eb"
+    },
+    {
+      "name": "AI Agent",
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a disciplined, quantitative and fundamental equity analyst. Your task is to evaluate a single stock using ONLY the metrics provided in the input (fundamentals, technicals, and growth_potential_score).\n\nRULES:\n- Return ONLY valid JSON. No markdown. No extra text.\n- Do NOT invent data. If a metric is missing, use null and mention the limitation in \"notes\".\n- Use probabilistic, cautious language. Never claim certainty.\n- This is NOT financial advice.\n\nOBJECTIVE:\nProduce a practical, actionable assessment: whether you would enter the trade or not, suggested entry/stop/take-profit levels, and a fundamental quality score (1–10) based on ratios, business quality, growth, valuation, and risk.\n\nMETRIC INTERPRETATION GUIDELINES:\n- Technicals:\n  - Support / resistance: use provided levels as the primary reference.\n  - RSI: >70 suggests overbought (higher short-term risk), <30 suggests oversold.\n  - SMA20/50/200: trend strength improves when price > SMA200 and > SMA50.\n  - volatility_ann_pct: high volatility increases risk and lowers confidence.\n- Fundamentals:\n  - High PE penalizes the score unless justified by strong growth.\n  - EPS and YoY revenue/earnings growth support business quality.\n  - Market cap is context only (not a quality metric).\n- growth_potential_score (0–100): use as a composite signal, but do not blindly follow it if it contradicts other indicators.\n\nOUTPUT SCHEMA (MANDATORY):\n{\n  \"ticker\": \"string\",\n  \"decision\": {\n    \"would_enter\": \"YES|NO\",\n    \"signal\": \"BUY|WATCH|SELL\",\n    \"time_horizon\": \"short|medium|long\",\n    \"confidence_0_100\": number\n  },\n  \"trade_plan\": {\n    \"entry\": number,\n    \"support\": number,\n    \"resistance\": number,\n    \"stop_loss\": number,\n    \"take_profit\": number,\n    \"rationale\": \"string\"\n  },\n  \"fundamental_score_1_10\": number,\n  \"fundamental_assessment\": {\n    \"business_quality\": \"weak|average|strong\",\n    \"valuation\": \"cheap|fair|expensive|unknown\",\n    \"growth\": \"low|moderate|high|unknown\",\n    \"profitability\": \"low|moderate|high|unknown\"\n  },\n  \"positives\": [\"string\", \"string\", \"string\"],\n  \"negatives\": [\"string\", \"string\", \"string\"],\n  \"thesis\": [\"string\", \"string\", \"string\"],\n  \"key_metrics_used\": {\n    \"pe\": number,\n    \"forward_pe\": number,\n    \"eps\": number,\n    \"revenue_growth_yoy\": number,\n    \"earnings_growth_yoy\": number,\n    \"rsi_14\": number,\n    \"volatility_ann_pct\": number,\n    \"price_vs_sma200\": \"above|below|unknown\",\n    \"growth_potential_score_0_100\": number\n  },\n  \"notes\": [\"string\"]\n}\n\nTRADE LEVEL LOGIC:\n- support: use technical.support_30d if available; otherwise null.\n- resistance: use technical.resistance_30d if available; otherwise null.\n- entry:\n  - BUY: near support (but not below it).\n  - WATCH: conservative entry (near support or after confirmation).\n  - SELL: entry may be null or near resistance (hypothetical short).\n- stop_loss:\n  - BUY/WATCH: support * 0.97 (≈3% below support) if support exists;\n    otherwise last_close * 0.93.\n- take_profit:\n  - BUY/WATCH: min(resistance * 0.99, last_close * 1.10) if resistance exists;\n    otherwise last_close * 1.08.\n- If RSI > 75 or volatility_ann_pct > 40, reduce confidence and be conservative with take_profit.\n\nFUNDAMENTAL SCORE (1–10):\nEvaluate holistically:\n- Growth (YoY revenue/earnings, EPS quality)\n- Valuation (PE, Forward PE, PEG when available)\n- Business quality and stability\n- Risk (volatility, trend strength)\n- Use growth_potential_score as a tiebreaker\nReturn an integer from 1 to 10.\n\nINPUT:\nYou will receive a JSON object containing fields such as:\n{\n  \"ticker\": \"...\",\n  \"fundamentals\": {...},\n  \"technical\": {...},\n  \"growth_potential_score\": ...\n}\n"
+        },
+        "promptType": "define",
+        "text": "=Analyze the following stock data and return the output strictly following the defined JSON schema.\n\nINPUT DATA:\n{{ JSON.stringify($json) }}\n"
+      },
+      "position": [
+        3648,
+        512
+      ],
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "id": "353cbd02-4a5b-4649-9c6f-b1bb5cc72d87"
+    },
+    {
+      "credentials": {
+        "openAiApi": {
+          "id": "767axIrNbLPXMZhU",
+          "name": "Snowflake Cortex AI"
+        }
+      },
+      "name": "OpenAI Chat Model",
+      "parameters": {
+        "builtInTools": {},
+        "model": {
+          "__rl": true,
+          "cachedResultName": "gpt-4.1-nano",
+          "mode": "list",
+          "value": "gpt-4.1-nano"
+        },
+        "options": {}
+      },
+      "position": [
+        3520,
+        960
+      ],
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "id": "e16a6da7-9aea-4f06-8854-8ee524be834c"
+    },
+    {
+      "name": "Code in JavaScript2",
+      "parameters": {
+        "jsCode": "// Parse AI output string -> JSON object\nvar raw = items[0].json.output;\n\n// A veces viene con espacios/line breaks\nif (!raw || typeof raw !== 'string') {\n  return [{ json: { error: 'No output string to parse', raw: raw } }];\n}\n\nvar obj = JSON.parse(raw);\n\n// Devuelve el objeto ya parseado\nreturn [{ json: obj }];\n"
+      },
+      "position": [
+        4000,
+        512
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "b8a30f47-5983-482d-9894-77eaa1a3050b"
+    },
+    {
+      "name": "Code in JavaScript3",
+      "parameters": {
+        "jsCode": "var j = items[0].json;\n\nfunction joinArr(a) {\n  if (!a || !a.length) return '';\n  // Une bullets en una sola celda\n  return a.join(' | ');\n}\n\nvar out = {\n  ticker: j.ticker || '',\n  would_enter: j.decision ? j.decision.would_enter : '',\n  signal: j.decision ? j.decision.signal : '',\n  time_horizon: j.decision ? j.decision.time_horizon : '',\n  confidence_0_100: j.decision ? j.decision.confidence_0_100 : null,\n\n  entry: j.trade_plan ? j.trade_plan.entry : null,\n  support: j.trade_plan ? j.trade_plan.support : null,\n  resistance: j.trade_plan ? j.trade_plan.resistance : null,\n  stop_loss: j.trade_plan ? j.trade_plan.stop_loss : null,\n  take_profit: j.trade_plan ? j.trade_plan.take_profit : null,\n  rationale: j.trade_plan ? j.trade_plan.rationale : '',\n\n  fundamental_score_1_10: j.fundamental_score_1_10 !== undefined ? j.fundamental_score_1_10 : null,\n  business_quality: j.fundamental_assessment ? j.fundamental_assessment.business_quality : '',\n  valuation: j.fundamental_assessment ? j.fundamental_assessment.valuation : '',\n  growth: j.fundamental_assessment ? j.fundamental_assessment.growth : '',\n  profitability: j.fundamental_assessment ? j.fundamental_assessment.profitability : '',\n\n  positives: joinArr(j.positives),\n  negatives: joinArr(j.negatives),\n  thesis: joinArr(j.thesis),\n  notes: joinArr(j.notes),\n\n  // key metrics\n  pe: j.key_metrics_used ? j.key_metrics_used.pe : null,\n  forward_pe: j.key_metrics_used ? j.key_metrics_used.forward_pe : null,\n  eps: j.key_metrics_used ? j.key_metrics_used.eps : null,\n  revenue_growth_yoy: j.key_metrics_used ? j.key_metrics_used.revenue_growth_yoy : null,\n  earnings_growth_yoy: j.key_metrics_used ? j.key_metrics_used.earnings_growth_yoy : null,\n  rsi_14: j.key_metrics_used ? j.key_metrics_used.rsi_14 : null,\n  volatility_ann_pct: j.key_metrics_used ? j.key_metrics_used.volatility_ann_pct : null,\n  price_vs_sma200: j.key_metrics_used ? j.key_metrics_used.price_vs_sma200 : '',\n  growth_potential_score_0_100: j.key_metrics_used ? j.key_metrics_used.growth_potential_score_0_100 : null\n};\n\nreturn [{ json: out }];\n"
+      },
+      "position": [
+        4224,
+        512
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "id": "d17d4d61-9e55-4929-81dd-f1f2568163c8"
+    },
+    {
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZU6vdyy5jG2m2v3I",
+          "name": "Google Sheets account"
+        }
+      },
+      "name": "Append row in sheet",
+      "parameters": {
+        "columns": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "ticker",
+              "id": "ticker",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "ENTER(YES/NO)",
+              "id": "ENTER(YES/NO)",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "ENTRY",
+              "id": "ENTRY",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "support",
+              "id": "support",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "resistance",
+              "id": "resistance",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "stop_loss",
+              "id": "stop_loss",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "take_profit",
+              "id": "take_profit",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "tecnhical_tesis",
+              "id": "tecnhical_tesis",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "fundamental_score",
+              "id": "fundamental_score",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "negative",
+              "id": "negative",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "positives",
+              "id": "positives",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "fundamental_thesis",
+              "id": "fundamental_thesis",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "ENTER(YES/NO)": "={{ $json.would_enter }}",
+            "ENTRY": "={{ $json.entry }}",
+            "fundamental_score": "={{ $json.fundamental_score_1_10 }}",
+            "fundamental_thesis": "={{ $json.thesis }}",
+            "negative": "={{ $json.negatives }}",
+            "positives": "={{ $json.positives }}",
+            "resistance": "={{ $json.resistance }}",
+            "stop_loss": "={{ $json.stop_loss }}",
+            "support": "={{ $json.support }}",
+            "take_profit": "={{ $json.take_profit }}",
+            "tecnhical_tesis": "={{ $json.rationale }}",
+            "ticker": "={{ $json.ticker }}"
+          }
+        },
+        "documentId": {
+          "__rl": true,
+          "cachedResultName": "Portfolio_Performance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ksZvZR0cuQHYJ0-W0FUZUNm3rwdudlZxckLIUcgY_r8/edit?usp=drivesdk",
+          "mode": "list",
+          "value": "1ksZvZR0cuQHYJ0-W0FUZUNm3rwdudlZxckLIUcgY_r8"
+        },
+        "operation": "append",
+        "options": {},
+        "sheetName": {
+          "__rl": true,
+          "cachedResultName": "Holdings_2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ksZvZR0cuQHYJ0-W0FUZUNm3rwdudlZxckLIUcgY_r8/edit#gid=231712198",
+          "mode": "list",
+          "value": 231712198
+        }
+      },
+      "position": [
+        4448,
+        640
+      ],
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "id": "d13eea8e-bce5-4f21-96b5-bbcb4853d366"
+    },
+    {
+      "name": "Sticky Note",
+      "parameters": {
+        "content": "## What this workflow does\nThis workflow automates **end-to-end stock analysis** using real market data and AI:\n\n- Reads a list of stock tickers from **Google Sheets**\n- Fetches **fundamental data** (valuation, growth, profitability) and **OHLCV price data** from **EODHD APIs**\n- Computes key **technical indicators** (RSI, SMA 20/50/200, volatility, support & resistance)\n- Uses an **AI model** to generate:\n  - Buy / Watch / Sell recommendation\n  - Entry price, stop-loss, and take-profit levels\n  - Investment thesis, pros & cons\n  - Fundamental quality score (1–10)\n- Stores the final structured analysis back into **Google Sheets**\n\nThis creates a **repeatable, no-code stock analysis pipeline** ready for decision-making or dashboards.\n\n\n### Key benefits\n1. **Automated & scalable**  \n   Analyze dozens of stocks in minutes without manual work.\n\n2. **Data-driven decisions**  \n   Combines fundamentals, technicals, and AI reasoning in one place.\n\n3. **Actionable outputs**  \n   Clear trade levels, risk notes, and investment scores—ready to use.\n\n---\n\n### Who this workflow is for\n- Retail investors and swing traders  \n- Data-driven investors and analysts  \n- Automation builders using n8n  \n- Anyone wanting AI-assisted stock analysis without writing code\n\n### Data source\nMarket data is powered by **EODHD APIs**  \n👉 Get a **10% discount** using this link:  \nhttps://eodhd.com/pricing-special-10?via=kmg&ref1=Meneses\n\n## How to configure this workflow\n\n### 1. Google Sheets (Input)\nCreate a sheet with a column called:\n- `ticker` (e.g. MSFT, AAPL, AMZN)\n\nEach row represents one stock to analyze.\n\n\n### 2. EODHD API\n- Create an EODHD account\n- Get your API token\n- Add it to the HTTP Request nodes as:\n  - `api_token=YOUR_API_KEY`\n\nDiscount link (10% off):  \nhttps://eodhd.com/pricing-special-10?via=kmg&ref1=Meneses\n\n\n### 3. AI Model\n- Configure your AI provider (OpenAI / compatible model)\n- The AI receives:\n  - Fundamentals\n  - Technical indicators\n  - Growth potential score\n- It returns structured JSON with recommendations and trade levels\n\n\n### 4. Google Sheets (Output)\nResults are appended to a `Signals` tab with:\n- Signal (BUY / WATCH / SELL)\n- Entry, Stop Loss, Take Profit\n- Fundamental score (1–10)\n- Investment thesis and risk notes\n",
+        "height": 1872,
+        "width": 832
+      },
+      "position": [
+        896,
+        -160
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "4f19f3f7-0090-4cb8-96aa-3554d6594a5e"
+    },
+    {
+      "name": "Sticky Note1",
+      "parameters": {
+        "content": "## INPUT\n\n![txt](https://ik.imagekit.io/agbb7sr41/eodhd_input.png)\n",
+        "height": 336
+      },
+      "position": [
+        1792,
+        192
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "47cd1c34-a8ef-4ec0-8b85-2b937abfce66"
+    },
+    {
+      "name": "Sticky Note2",
+      "parameters": {
+        "color": 7,
+        "content": "## AI Output\n- The merged data is sent to the **AI system**\n- The AI evaluates fundamentals, technicals, and risk\n- The final output includes:\n  - BUY / WATCH / SELL signal\n  - Entry, Stop Loss, Take Profit\n  - Investment score and rationale\n\nResults are ready to use or store in Google Sheets.",
+        "height": 224,
+        "width": 624
+      },
+      "position": [
+        3696,
+        192
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "aab476af-a23a-45f6-bc51-30aa8db91706"
+    },
+    {
+      "name": "Sticky Note3",
+      "parameters": {
+        "color": 7,
+        "content": "##  Transform & Merge\n\n- Raw market data is cleaned and normalized\n- Technical indicators are calculated\n- Fundamentals and price data are **merged into one dataset**\n\nAt the end of this step, each stock has a single, structured data object.\n",
+        "height": 192,
+        "width": 576
+      },
+      "position": [
+        2960,
+        208
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "82922d6d-73db-4a36-bb4b-b3b311067dc2"
+    },
+    {
+      "name": "Sticky Note4",
+      "parameters": {
+        "color": 7,
+        "content": "## Input (Data sources)\n- Stock tickers come from **Google Sheets**\n- Market data is fetched via **API calls**:\n  - Fundamentals\n  - Price candles (OHLCV)\n\nThis step collects all the raw data needed for the analysis.",
+        "height": 192,
+        "width": 480
+      },
+      "position": [
+        2160,
+        224
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "907f4da5-c643-470e-9b40-1bc7518c8dda"
+    },
+    {
+      "name": "Sticky Note5",
+      "parameters": {
+        "content": "## OUTPUT\n![txt](https://ik.imagekit.io/agbb7sr41/eodhd_ouput.png)",
+        "height": 208,
+        "width": 1008
+      },
+      "position": [
+        4416,
+        272
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "525b201d-5c7d-473b-bda9-4d3b827f3b1b"
+    },
+    {
+      "name": "Call EODHD Financial API",
+      "parameters": {
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        },
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_token",
+              "value": " 6962c4de96b756.96575586"
+            },
+            {
+              "name": "fmt",
+              "value": "json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "=https://eodhd.com/api/eod/{{ $json.Symbol }}.US"
+      },
+      "position": [
+        2528,
+        512
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "id": "9f5046b4-6eef-4f4f-b3e8-e26d8370c082"
+    },
+    {
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      },
+      "name": "Ollama Chat Model",
+      "parameters": {
+        "model": "glm-4.7:cloud",
+        "options": {}
+      },
+      "position": [
+        3648,
+        688
+      ],
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "id": "ec6767f9-0f51-42d4-a4b0-60ea80589e52"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Code in JavaScript2",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Loop Over Items",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Call EODHD Financial API": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "HTTP Request1",
+            "type": "main"
+          },
+          {
+            "index": 1,
+            "node": "Merge",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Merge",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Code in JavaScript3",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Append row in sheet",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Loop Over Items",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Code in JavaScript1",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "index": 0,
+            "node": "Call EODHD Financial API",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Code in JavaScript",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "ai_languageModel"
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Get row(s) in sheet",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Get row(s) in sheet": [
+      {
+        "json": {
+          "row_number": 2,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 22,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 23,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 24,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 25,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 26,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 27,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 28,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 29,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 31,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 32,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 41,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 42,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 43,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 44,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 45,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 46,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 47,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 48,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 49,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 50,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 51,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 52,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 53,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 54,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 55,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 56,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 57,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 58,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 59,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 60,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 61,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 62,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 63,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 64,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 65,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 66,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 67,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 68,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 69,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 71,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 72,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 81,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 82,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 83,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 84,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 85,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 86,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 87,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 88,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 89,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 90,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 91,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 92,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 93,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 94,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 95,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 96,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 97,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 98,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 99,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 100,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 101,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 102,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 103,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 104,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 105,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 106,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 107,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 108,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 109,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 111,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 112,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 121,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 122,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 123,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 124,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 125,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 126,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 127,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 128,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 129,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 130,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 131,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 132,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 133,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 134,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 135,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 136,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 137,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 138,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 139,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 140,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 141,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 142,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 143,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 144,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 145,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 146,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 147,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 148,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 149,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 151,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 152,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 161,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 162,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 163,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 164,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 165,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 166,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 167,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 168,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 169,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 170,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 171,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 172,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 173,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 174,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 175,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 176,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 177,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 178,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 179,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 180,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 181,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 182,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 183,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 184,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 185,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 186,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 187,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 188,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 189,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 191,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 192,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 201,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 202,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 203,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 204,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 205,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 206,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 207,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 208,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 209,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 210,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 211,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 212,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 213,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 214,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 215,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 216,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 217,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 218,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 219,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 220,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 221,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 222,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 223,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 224,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 225,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 226,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 227,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 228,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 229,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 231,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 232,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 241,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 242,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 243,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 244,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 245,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 246,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 247,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 248,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 249,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 250,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 251,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 252,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 253,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 254,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 255,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 256,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 257,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 258,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 259,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 260,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 261,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 262,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 263,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 264,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 265,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 266,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 267,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 268,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 269,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 271,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 272,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 281,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 282,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 283,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 284,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 285,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 286,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 287,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 288,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 289,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 290,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 291,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 292,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 293,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 294,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 295,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 296,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 297,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 298,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 299,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 300,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 301,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 302,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 303,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 304,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 305,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 306,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 307,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 308,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 309,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 311,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 312,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 321,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 322,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 323,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 324,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 325,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 326,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 327,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 328,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 329,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 330,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 331,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 332,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 333,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 334,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 335,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 336,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 337,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 338,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 339,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 340,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 341,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 342,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 343,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 344,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 345,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 346,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 347,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 348,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 349,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 351,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 352,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 361,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 362,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 363,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 364,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 365,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 366,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 367,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 368,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 369,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 370,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 371,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 372,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 373,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 374,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 375,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 376,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 377,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 378,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 379,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 380,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 381,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 382,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 383,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 384,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 385,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 386,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 387,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 388,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 389,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 391,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 392,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 401,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 402,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 403,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 404,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 405,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 406,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 407,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 408,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 409,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 410,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 411,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 412,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 413,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 414,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 415,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 416,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 417,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 418,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 419,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 420,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 421,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 422,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 423,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 424,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 425,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 426,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 427,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 428,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 429,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 431,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 432,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 441,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 442,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 443,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 444,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 445,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 446,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 447,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 448,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 449,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 450,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 451,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 452,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 453,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 454,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 455,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 456,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 457,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 458,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 459,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 460,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 461,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 462,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 463,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 464,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 465,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 466,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 467,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 468,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 469,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 471,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 472,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 481,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 482,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 483,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 484,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 485,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 486,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 487,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 488,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 489,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 490,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 491,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 492,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 493,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 494,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 495,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 496,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 497,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 498,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 499,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 500,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 501,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 502,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 503,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 504,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 505,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 506,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 507,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 508,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 509,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 511,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 512,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 521,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 522,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 523,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 524,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 525,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 526,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 527,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 528,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 529,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 530,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 531,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 532,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 533,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 534,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 535,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 536,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 537,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 538,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 539,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 540,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 541,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 542,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 543,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 544,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 545,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 546,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 547,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 548,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 549,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 551,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 552,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 561,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 562,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 563,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 564,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 565,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 566,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 567,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 568,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 569,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 570,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 571,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 572,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 573,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 574,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 575,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 576,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 577,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 578,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 579,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 580,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 581,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 582,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 583,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 584,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 585,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 586,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 587,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 588,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 589,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 591,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 592,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 601,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 602,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 603,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 604,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 605,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 606,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 607,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 608,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 609,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 610,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 611,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 612,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 613,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 614,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 615,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 616,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 617,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 618,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 619,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 620,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 621,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 622,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 623,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 624,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 625,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 626,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 627,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 628,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 629,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 631,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 632,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 641,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 642,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 643,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 644,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 645,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 646,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 647,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 648,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 649,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 650,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 651,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 652,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 653,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 654,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 655,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 656,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 657,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 658,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 659,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 660,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 661,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 662,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 663,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 664,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 665,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 666,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 667,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 668,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 669,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 671,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 672,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 681,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 682,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 683,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 684,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 685,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 686,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 687,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 688,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 689,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 690,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 691,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 692,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 693,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 694,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 695,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 696,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 697,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 698,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 699,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 700,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 701,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 702,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 703,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 704,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 705,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 706,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 707,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 708,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 709,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 711,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 712,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 721,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 722,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 723,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 724,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 725,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 726,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 727,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 728,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 729,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 730,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 731,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 732,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 733,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 734,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 735,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 736,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 737,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 738,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 739,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 740,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 741,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 742,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 743,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 744,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 745,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 746,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 747,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 748,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 749,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 751,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 752,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 761,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 762,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 763,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 764,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 765,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 766,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 767,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 768,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 769,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 770,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 771,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 772,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 773,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 774,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 775,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 776,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 777,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 778,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 779,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 780,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 781,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 782,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 783,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 784,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 785,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 786,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 787,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 788,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 789,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 791,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 792,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 801,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 802,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 803,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 804,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 805,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 806,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 807,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 808,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 809,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 810,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 811,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 812,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 813,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 814,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 815,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 816,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 817,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 818,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 819,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 820,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 821,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 822,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 823,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 824,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 825,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 826,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 827,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 828,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 829,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 831,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 832,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 841,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 842,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 843,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 844,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 845,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 846,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 847,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 848,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 849,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 850,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 851,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 852,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 853,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 854,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 855,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 856,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 857,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 858,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 859,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 860,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 861,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 862,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 863,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 864,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 865,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 866,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 867,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 868,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 869,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 871,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 872,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 881,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 882,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 883,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 884,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 885,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 886,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 887,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 888,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 889,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 890,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 891,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 892,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 893,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 894,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 895,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 896,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 897,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 898,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 899,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 900,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 901,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 902,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 903,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 904,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 905,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 906,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 907,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 908,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 909,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 911,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 912,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 921,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 922,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 923,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 924,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 925,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 926,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 927,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 928,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 929,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 930,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 931,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 932,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 933,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 934,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 935,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 936,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 937,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 938,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 939,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 940,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 941,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 942,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 943,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 944,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 945,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 946,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 947,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 948,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 949,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 951,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 952,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 961,
+          "Symbol": "Symbol"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 962,
+          "Symbol": "VZ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 963,
+          "Symbol": "VTWAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 964,
+          "Symbol": "VGHCX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 965,
+          "Symbol": "HPQ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 966,
+          "Symbol": "FLMVX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 967,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 968,
+          "Symbol": "CSCO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 969,
+          "Symbol": "TSM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 970,
+          "Symbol": "CRM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 971,
+          "Symbol": "DVY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 972,
+          "Symbol": "GD"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 973,
+          "Symbol": "JNJ"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 974,
+          "Symbol": "VHYAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 975,
+          "Symbol": "MO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 976,
+          "Symbol": "SDY"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 977,
+          "Symbol": "NKE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 978,
+          "Symbol": "XOM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 979,
+          "Symbol": "PEP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 980,
+          "Symbol": "VFIAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 981,
+          "Symbol": "JPM"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 982,
+          "Symbol": "AMZN"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 983,
+          "Symbol": "VTSAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 984,
+          "Symbol": "NVDA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 985,
+          "Symbol": "MSFT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 986,
+          "Symbol": "VPMAX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 987,
+          "Symbol": "DODGX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 988,
+          "Symbol": "VGT"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 989,
+          "Symbol": "FDGRX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 991,
+          "Symbol": "ORCL"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 992,
+          "Symbol": "FTBFX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "versionId": "0b77eb34-2c8c-4014-ae61-df12413e0e3e",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-08T14:32:39.044Z",
+      "createdAt": "2026-01-08T14:32:39.044Z",
+      "role": "workflow:owner",
+      "workflowId": "K0JZPGQRe-jTTVFEwunI4",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

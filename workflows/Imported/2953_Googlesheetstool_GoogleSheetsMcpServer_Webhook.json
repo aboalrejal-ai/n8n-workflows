@@ -1,0 +1,443 @@
+{
+  "updatedAt": "2025-12-27T14:39:01.430Z",
+  "createdAt": "2025-12-11T17:50:45.285Z",
+  "id": "aQCDLw5fF6EG0Biq",
+  "name": "Google_Sheets_MCP_Server",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "b1e0bf03-4952-4be9-828f-7a7305040703"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "357dd962-6de2-4976-816f-623bd4a7f558",
+      "name": "MCP Server Trigger",
+      "webhookId": "b1e0bf03-4952-4be9-828f-7a7305040703"
+    },
+    {
+      "parameters": {
+        "description": "Call Google Sheets to Lookup Data",
+        "workflowId": {
+          "__rl": true,
+          "value": "Bz1Quww5Xs0jRVSm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Bz1Quww5Xs0jRVSm",
+          "cachedResultName": "Google_Sheets_SubWorkflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query_column": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query_column', ``, 'string') }}",
+            "query_value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query_value', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query_column",
+              "displayName": "query_column",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "query_value",
+              "displayName": "query_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        224
+      ],
+      "id": "0a5b0f97-93a3-4a3b-8c9b-a1755d14cded",
+      "name": "Call 'Google_Sheets_SubWorkflow'"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append or update row in sheet in Google Sheets",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4",
+          "mode": "list",
+          "cachedResultName": "Sample_Workflow_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "First": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First', ``, 'string') }}",
+            "Last": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Last', ``, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+            "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', ``, 'string') }}",
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID__using_to_match_', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "First",
+              "displayName": "First",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Last",
+              "displayName": "Last",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        208
+      ],
+      "id": "50a1d29f-3752-4b06-881e-5ada0d92e74a",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZU6vdyy5jG2m2v3I",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Call 'Google_Sheets_SubWorkflow'": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "dab93142-2d47-43a7-bf87-fb674d9da0e8",
+  "activeVersionId": "dab93142-2d47-43a7-bf87-fb674d9da0e8",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-11T17:50:45.285Z",
+      "createdAt": "2025-12-11T17:50:45.285Z",
+      "role": "workflow:owner",
+      "workflowId": "aQCDLw5fF6EG0Biq",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T17:09:11.904Z",
+    "createdAt": "2025-12-12T17:09:11.904Z",
+    "versionId": "dab93142-2d47-43a7-bf87-fb674d9da0e8",
+    "workflowId": "aQCDLw5fF6EG0Biq",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "b1e0bf03-4952-4be9-828f-7a7305040703"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "357dd962-6de2-4976-816f-623bd4a7f558",
+        "name": "MCP Server Trigger",
+        "webhookId": "b1e0bf03-4952-4be9-828f-7a7305040703"
+      },
+      {
+        "parameters": {
+          "description": "Call Google Sheets to Lookup Data",
+          "workflowId": {
+            "__rl": true,
+            "value": "Bz1Quww5Xs0jRVSm",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/Bz1Quww5Xs0jRVSm",
+            "cachedResultName": "Google_Sheets_SubWorkflow"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "query_column": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query_column', ``, 'string') }}",
+              "query_value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('query_value', ``, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "query_column",
+                "displayName": "query_column",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "query_value",
+                "displayName": "query_value",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          -16,
+          224
+        ],
+        "id": "0a5b0f97-93a3-4a3b-8c9b-a1755d14cded",
+        "name": "Call 'Google_Sheets_SubWorkflow'"
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Append or update row in sheet in Google Sheets",
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4",
+            "mode": "list",
+            "cachedResultName": "Sample_Workflow_Data",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sheet1",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QOn-nKBEZHM9h9YWpC7bZABsBN5D29uqICuGK5APCe4/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "First": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('First', ``, 'string') }}",
+              "Last": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Last', ``, 'string') }}",
+              "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', ``, 'string') }}",
+              "status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('status', ``, 'string') }}",
+              "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID__using_to_match_', ``, 'string') }}"
+            },
+            "matchingColumns": [
+              "ID"
+            ],
+            "schema": [
+              {
+                "id": "ID",
+                "displayName": "ID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "First",
+                "displayName": "First",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Last",
+                "displayName": "Last",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "row_number",
+                "displayName": "row_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true,
+                "readOnly": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.7,
+        "position": [
+          272,
+          208
+        ],
+        "id": "50a1d29f-3752-4b06-881e-5ada0d92e74a",
+        "name": "Append or update row in sheet in Google Sheets",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ZU6vdyy5jG2m2v3I",
+            "name": "Google Sheets account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Call 'Google_Sheets_SubWorkflow'": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append or update row in sheet in Google Sheets": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}

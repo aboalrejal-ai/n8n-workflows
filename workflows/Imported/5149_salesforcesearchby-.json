@@ -1,0 +1,81 @@
+{
+  "updatedAt": "2026-02-10T21:25:46.432Z",
+  "createdAt": "2026-02-10T21:10:16.140Z",
+  "id": "PyNMJ8Txahh642DX",
+  "name": "salesForceSearchBy",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "{\n  \"name\": \"customerAccountSalesforceByCountry\",\n  \"description\": \"Retrieves Customer & Account records matching a specific name and country\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n     \"name\": {\n         \"type\":\"string\",\n         \"description\": \"Customers Account Name\"\n},\n      \"country\": {\n        \"type\": \"string\",\n        \"description\": \"The Country to retrieve Customer and Account Data\"\n},\n   \"required\": [\"name\"}\n    \"required\": [\"country\"]\n}\n}",
+        "authentication": "oAuth2",
+        "resource": "search",
+        "operation": "query",
+        "query": "=SELECT \n    a.Id,\n    a.Name,\n    a.BillingCountry,\n    a.Phone,\n    a.Website,\n    a.Type,\n    a.Rating,\n    a.Site,\n    a.Account_Segment__c,\n    a.Fabric_Process__c,\n    a.CreatedDate,\n    a.LastModifiedDate,\n    (SELECT \n        c.Id,\n        c.FirstName,\n        c.LastName,\n        c.Email,\n        c.Phone,\n        c.Title,\n        c.Department\n     FROM Contacts c),\n    (SELECT \n        o.Id,\n        o.Name,\n        o.Amount,\n        o.StageName,\n        o.CloseDate,\n        o.Type,\n        o.Probability\n     FROM Opportunities o\n     WHERE o.IsClosed = false)\nFROM Account a\nWHERE a.Name LIKE '%{{$fromAI(\"name\",\"\",\"string\")}}%'\nAND a.BillingCountry LIKE '%{{$fromAI(\"country\",\"\",\"string\")}}%'\nORDER BY a.Name ASC\nLIMIT 10"
+      },
+      "type": "n8n-nodes-base.salesforceTool",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        224
+      ],
+      "id": "eff81732-9433-4258-b2fa-b3f5dbf49544",
+      "name": "customerAccountSalesforceByCountry",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "El72ffp0tQmH4E3g",
+          "name": "Salesforce account"
+        }
+      }
+    },
+    {
+      "id": "abeccd0d-5ad1-44a5-9574-c30964420fb7",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -352,
+        224
+      ],
+      "parameters": {
+        "inputSource": "passthrough"
+      }
+    }
+  ],
+  "connections": {
+    "customerAccountSalesforceByCountry": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "bec1fe72-2475-4563-8092-f660424f815e",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-10T21:10:16.140Z",
+      "createdAt": "2026-02-10T21:10:16.140Z",
+      "role": "workflow:owner",
+      "workflowId": "PyNMJ8Txahh642DX",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

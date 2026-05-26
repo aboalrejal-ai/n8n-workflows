@@ -1,0 +1,210 @@
+{
+  "updatedAt": "2026-02-05T23:01:07.248Z",
+  "createdAt": "2025-12-31T15:39:30.196Z",
+  "id": "Viv8vC8grhjGnwIT",
+  "name": "Firecrawl_WebScraping",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "firecrawl",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -192
+      ],
+      "id": "f2994890-4841-40c5-aaa9-6e6f633bf428",
+      "name": "Call Firecrawl",
+      "webhookId": "b43daf8c-5860-401f-ab62-54eed75b8d45",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data.web }}",
+        "options": {
+          "systemMessage": "You are a blog writer and rewrite the content in a more summaried manner that is clear and concise"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2ac2f663-f8ad-4ddb-b3a5-7e6c868da880",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "739c066e-a0d3-4c1e-b266-725a4f3cb874",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        512,
+        -240
+      ],
+      "id": "6a684d9e-2fc7-4959-8892-12f20f3a2061",
+      "name": "Respond to Webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "responseMode": "responseNodes"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        0
+      ],
+      "id": "6d728eaf-6b8a-4fab-a43f-24b0c47615c1",
+      "name": "When chat message received",
+      "webhookId": "5cfa71fb-cedd-4019-b350-443b75059217"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "query": "={{ $json.chatInput }}",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [
+        16,
+        0
+      ],
+      "id": "5ac28d6a-1ec7-4b9f-a4a2-86f0574539c2",
+      "name": "Search and optionally scrape search results",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "TeMbi0WvP7niZdTt",
+          "name": "Firecrawl account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.output }}",
+        "waitUserReply": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        576,
+        0
+      ],
+      "id": "b73d1adb-c80f-4fed-868f-1377be08938a",
+      "name": "Respond to Chat",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    }
+  ],
+  "connections": {
+    "Call Firecrawl": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Search and optionally scrape search results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search and optionally scrape search results": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "dcbfff7f-6441-437e-a4f4-8a8460c31306",
+  "activeVersionId": null,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-31T15:39:30.196Z",
+      "createdAt": "2025-12-31T15:39:30.196Z",
+      "role": "workflow:owner",
+      "workflowId": "Viv8vC8grhjGnwIT",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

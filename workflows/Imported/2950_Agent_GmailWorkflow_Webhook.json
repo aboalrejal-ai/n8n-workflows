@@ -1,0 +1,167 @@
+{
+  "updatedAt": "2025-12-27T14:31:50.898Z",
+  "createdAt": "2025-12-12T18:11:24.806Z",
+  "id": "CyDKHgOtM1sA6bkU",
+  "name": "Gmail_WorkFlow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "35d75225-0570-47df-b797-5b9b103c2ae5",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI email assistant that helps draft replies to received emails.\nYou are triggered upon each email received, and your job is to:\n1. Carefully read the email, identify sender name, context, severity and questions to reply.\n2. In some cases, there will be questions that need to be answered, others will demand you\nask questions back to the sender, and others are simply FYIs that can be replied with a\nsimple receipt sentence.\n3. Compose ONE complete, friendly, and professional reply that addresses the questions asked.\nImportant:\n• You will compose a complete email body, including the greeting, the content, and\nthe signature\n• Your output must address any questions present in the incoming email that you are\nreplying to do not make up facts or new context, stick to replying to the incoming\nemail and the topics asked there\n• Do not include a subject line in your output\n• Keep your tone professional, friendly, and clear\n• Make sure the reply is consolidated into a SINGLE email covering all questions\n• For email signature, my name is Shawn M. Crowley\n• Do not use any placeholders\n• Do not ask me questions, only reply to the sender of the email. I’ll only be reviewing\nthe drafts you create; those should be ready to send\n• Below is the email received:\nFrom:\n{{ $json.From }}\nBody:\n{{ $json.snippet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3036ae2d-5ea5-45b2-a4f2-5c7ce76e203c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "minimax-m2.1:cloud",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        80,
+        208
+      ],
+      "id": "12820ea5-87cb-4956-9716-abbab6ec2c91",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Gmail Trigger').item.json.Subject }}",
+        "message": "={{ $json.output }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "39f6845a-b47f-4245-a2bf-d107f8b823a6",
+      "name": "Create a draft",
+      "webhookId": "4a111caf-2c64-4304-800b-5a53eb5461a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Gmail Trigger": {
+      "Gmail Trigger": {
+        "lastTimeChecked": 1765566269,
+        "possibleDuplicates": [
+          "19b13f347bc2ee84",
+          "19b13f30ff4f1779",
+          "19b13f2a1210b197"
+        ]
+      }
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "052e5d31-95d5-43b7-b57d-dfec47c7f422",
+  "activeVersionId": null,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-12T18:11:24.806Z",
+      "createdAt": "2025-12-12T18:11:24.806Z",
+      "role": "workflow:owner",
+      "workflowId": "CyDKHgOtM1sA6bkU",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

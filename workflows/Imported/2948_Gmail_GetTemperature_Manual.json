@@ -1,0 +1,114 @@
+{
+  "updatedAt": "2026-01-01T15:38:24.802Z",
+  "createdAt": "2026-01-01T15:14:41.731Z",
+  "id": "13vwGAu6AXzdIVIN",
+  "name": "Get Temperature",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        0
+      ],
+      "id": "3679e1d8-bfc0-458a-b30b-a852c1affe04",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "format": "imperial",
+        "locationSelection": "zipCode",
+        "zipCode": "19382"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "83bf23b0-d126-4165-9ad2-2de4e5d0666d",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "PKiDH3dcv7mGToY0",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shawnmcrowley@gmail.com",
+        "subject": "=Today's Weather in: {{ $json.name }}",
+        "message": "=Today's High Tempaterature is: {{ $json.main.temp_max }}, Today's Low Temperature is : {{ $json.main.temp_min }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "07c7d69c-f1b0-4c1b-986f-be78ea1cfead",
+      "name": "Send a message",
+      "webhookId": "3f01d64d-1a51-423e-aef2-49526d9fd889",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "OpenWeatherMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "c9bdffa0-d146-4351-ba7f-eac60402b7b3",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-01T15:14:41.731Z",
+      "createdAt": "2026-01-01T15:14:41.731Z",
+      "role": "workflow:owner",
+      "workflowId": "13vwGAu6AXzdIVIN",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

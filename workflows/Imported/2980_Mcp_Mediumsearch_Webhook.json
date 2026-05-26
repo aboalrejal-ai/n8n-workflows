@@ -1,0 +1,71 @@
+{
+  "updatedAt": "2026-01-28T22:35:11.707Z",
+  "createdAt": "2026-01-23T00:08:15.460Z",
+  "id": "9G2UaUg2NW18tX1e7maIj",
+  "name": "mediumSearch",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "getMedium"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3cd5f230-73e9-4469-afda-91c18febd76f",
+      "name": "MCP Server Trigger",
+      "webhookId": "4339ccd8-11c3-4f31-ac0a-08e5895a62fc"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.mediumTool",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "8703c4b9-f34c-4bba-9d0a-bd285863eb77",
+      "name": "Create a post in Medium"
+    }
+  ],
+  "connections": {
+    "Create a post in Medium": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "8f97756f-8a19-4e75-bb8e-84a1a583feb9",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-23T00:08:15.460Z",
+      "createdAt": "2026-01-23T00:08:15.460Z",
+      "role": "workflow:owner",
+      "workflowId": "9G2UaUg2NW18tX1e7maIj",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

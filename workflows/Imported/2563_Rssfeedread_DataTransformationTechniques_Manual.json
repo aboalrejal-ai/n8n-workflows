@@ -1,0 +1,237 @@
+{
+  "updatedAt": "2026-01-05T16:22:33.669Z",
+  "createdAt": "2025-12-27T20:49:30.969Z",
+  "id": "B7vLw04akThxxHOb",
+  "name": "Data Transformation Techniques",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -176
+      ],
+      "id": "d9753e59-ab82-432a-9ec3-fb2465d5490c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "053131fb-c03b-4894-a09e-fab47b959536",
+              "name": "URL",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            },
+            {
+              "id": "07b2b9e3-166c-4b9a-bbb0-6dfd627e635d",
+              "name": "Categories",
+              "value": "={{ $json.categories }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -352,
+        -176
+      ],
+      "id": "5b07a9b6-2606-4f9e-be35-eca41e14fb0f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f7de967-1333-4ac1-a321-f97b995f2807",
+              "leftValue": "={{ $json.Categories }}",
+              "rightValue": "Digital Marketing",
+              "operator": {
+                "type": "array",
+                "operation": "contains",
+                "rightType": "any"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -544,
+        96
+      ],
+      "id": "93c8fae5-2968-44d4-beed-683ebf2cdad6",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Categories }}",
+                    "rightValue": "CRM",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    },
+                    "id": "a050fc2c-46c5-47f7-87d6-16cd3578cec7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CRM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3855fe85-d964-4ccb-a480-24ad5a41101f",
+                    "leftValue": "={{ $json.Categories }}",
+                    "rightValue": "Hubspot sales",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Hubspot Sales"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        96
+      ],
+      "id": "8a012ee8-1f61-4ff1-ac45-6d056e4404d2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "List of Recent Posts",
+        "include": "=allFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -176
+      ],
+      "id": "7cba06e7-3e62-4fd8-bf63-eb7daeac1da8",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "url": "http://syncbricks.com/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        -176
+      ],
+      "id": "6e5738b2-c7a4-4483-a782-2f292cb21061",
+      "name": "RSS Read"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "cc8a4959-18ae-46d2-9d53-a3abd2169c51",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-27T20:49:30.969Z",
+      "createdAt": "2025-12-27T20:49:30.969Z",
+      "role": "workflow:owner",
+      "workflowId": "B7vLw04akThxxHOb",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

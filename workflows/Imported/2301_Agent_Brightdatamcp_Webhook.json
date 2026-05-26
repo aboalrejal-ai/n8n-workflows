@@ -1,0 +1,154 @@
+{
+  "updatedAt": "2026-02-02T20:11:38.117Z",
+  "createdAt": "2026-02-02T19:25:08.142Z",
+  "id": "x3sRCaCTqRy7ittFHCtcf",
+  "name": "brightDataMCP",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -288,
+        -240
+      ],
+      "id": "fdb1738b-84ce-4c9e-abef-0fd189e32c3b",
+      "name": "When chat message received",
+      "webhookId": "86c67de3-9f0d-4115-b1f1-75b4c72a8289"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        -240
+      ],
+      "id": "6b0dec9d-d22d-4718-85e9-65626c4c4ee1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "kimi-k2:1t-cloud",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -32
+      ],
+      "id": "b1fe5c65-f1e4-4194-baf6-ee0ffa09718d",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        -32
+      ],
+      "id": "2367078a-062c-4b3e-84fb-e6c4db94e9fb",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://mcp.brightdata.com/mcp?token=ef957d2d-aa66-4f4d-9f81-eab926c1a5d5",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -32
+      ],
+      "id": "9e34f917-95a0-4857-a3fc-da3d41dadcd9",
+      "name": "MCP Client"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ea5ced64-a38d-4c39-9696-4cf105fff43f",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T19:25:08.142Z",
+      "createdAt": "2026-02-02T19:25:08.142Z",
+      "role": "workflow:owner",
+      "workflowId": "x3sRCaCTqRy7ittFHCtcf",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

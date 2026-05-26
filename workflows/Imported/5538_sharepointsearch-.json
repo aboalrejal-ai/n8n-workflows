@@ -1,0 +1,152 @@
+{
+  "updatedAt": "2026-01-19T19:21:33.482Z",
+  "createdAt": "2026-01-19T17:37:12.771Z",
+  "id": "j1S3MUMT6puE6QTxcxJEt",
+  "name": "sharePointSearch",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "getSharePoint"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4d42485f-2dcb-454d-aae8-f97a16e0fef7",
+      "name": "MCP Server Trigger",
+      "webhookId": "cb6f743c-f189-4ce5-8d54-e4a0856c5a2e"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many lists in Microsoft SharePoint",
+        "resource": "list",
+        "site": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Site', `Model Defined Folder Matching By Query`, 'string') }}",
+          "mode": "id"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.microsoftSharePointTool",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "8a6d163c-824a-4b06-9dff-1c71df77977e",
+      "name": "get_lists",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "fZGfgPtwhlnm9R9N",
+          "name": "Microsoft SharePoint account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "get_lists": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "114d883c-ab01-4ae9-a92e-8fed195984b2",
+  "activeVersionId": "114d883c-ab01-4ae9-a92e-8fed195984b2",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-19T17:37:12.771Z",
+      "createdAt": "2026-01-19T17:37:12.771Z",
+      "role": "workflow:owner",
+      "workflowId": "j1S3MUMT6puE6QTxcxJEt",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-19T19:21:42.141Z",
+    "createdAt": "2026-01-19T19:21:33.484Z",
+    "versionId": "114d883c-ab01-4ae9-a92e-8fed195984b2",
+    "workflowId": "j1S3MUMT6puE6QTxcxJEt",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "getSharePoint"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "4d42485f-2dcb-454d-aae8-f97a16e0fef7",
+        "name": "MCP Server Trigger",
+        "webhookId": "cb6f743c-f189-4ce5-8d54-e4a0856c5a2e"
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Get many lists in Microsoft SharePoint",
+          "resource": "list",
+          "site": {
+            "__rl": true,
+            "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Site', `Model Defined Folder Matching By Query`, 'string') }}",
+            "mode": "id"
+          },
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.microsoftSharePointTool",
+        "typeVersion": 1,
+        "position": [
+          96,
+          208
+        ],
+        "id": "8a6d163c-824a-4b06-9dff-1c71df77977e",
+        "name": "get_lists",
+        "credentials": {
+          "microsoftSharePointOAuth2Api": {
+            "id": "fZGfgPtwhlnm9R9N",
+            "name": "Microsoft SharePoint account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "get_lists": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}

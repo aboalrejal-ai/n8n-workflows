@@ -1,0 +1,146 @@
+{
+  "updatedAt": "2026-01-19T17:15:39.280Z",
+  "createdAt": "2026-01-17T22:21:32.442Z",
+  "id": "SJ-4I_1lXP3yYzOnBbbuo",
+  "name": "notionSearch",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "getNotion"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "81c7a720-fc2e-4b93-81f4-2f2ac654f573",
+      "name": "MCP Server Trigger",
+      "webhookId": "bb122a61-b27d-4808-b7dc-6033f2b09c58"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "  \"name\": \"getNotion\",\n  \"description\": \"Query Notion Pages and Database\",\n  \"parameters\": {\n    \"type\": \"string\",\n    \"properties\": {\n      \"query\": {\n        \"type\": \"string\",\n        \"description\": \"Query to search notion\"\n      }\n    \"required\": [\"query\"]\n  }\n}return JSON content",
+        "operation": "search",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Text', ``, 'string') }}",
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "a7de89eb-8351-42f0-954e-1c131b30a8cd",
+      "name": "get-pages",
+      "credentials": {
+        "notionApi": {
+          "id": "3fHRfNFuVaBVdXOX",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "get-pages": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "a59903fb-6439-42cc-9f77-ff0d033c4b7e",
+  "activeVersionId": "a59903fb-6439-42cc-9f77-ff0d033c4b7e",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-17T22:21:32.442Z",
+      "createdAt": "2026-01-17T22:21:32.442Z",
+      "role": "workflow:owner",
+      "workflowId": "SJ-4I_1lXP3yYzOnBbbuo",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-19T17:16:07.918Z",
+    "createdAt": "2026-01-19T17:15:39.284Z",
+    "versionId": "a59903fb-6439-42cc-9f77-ff0d033c4b7e",
+    "workflowId": "SJ-4I_1lXP3yYzOnBbbuo",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "getNotion"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "81c7a720-fc2e-4b93-81f4-2f2ac654f573",
+        "name": "MCP Server Trigger",
+        "webhookId": "bb122a61-b27d-4808-b7dc-6033f2b09c58"
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "  \"name\": \"getNotion\",\n  \"description\": \"Query Notion Pages and Database\",\n  \"parameters\": {\n    \"type\": \"string\",\n    \"properties\": {\n      \"query\": {\n        \"type\": \"string\",\n        \"description\": \"Query to search notion\"\n      }\n    \"required\": [\"query\"]\n  }\n}return JSON content",
+          "operation": "search",
+          "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Text', ``, 'string') }}",
+          "returnAll": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.notionTool",
+        "typeVersion": 2.2,
+        "position": [
+          96,
+          208
+        ],
+        "id": "a7de89eb-8351-42f0-954e-1c131b30a8cd",
+        "name": "get-pages",
+        "credentials": {
+          "notionApi": {
+            "id": "3fHRfNFuVaBVdXOX",
+            "name": "Notion account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "get-pages": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1.2",
+    "description": "Names and Descriptions following MCP Best Practices",
+    "autosaved": false
+  },
+  "tags": []
+}

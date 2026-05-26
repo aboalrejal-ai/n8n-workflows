@@ -1,0 +1,228 @@
+{
+  "updatedAt": "2026-01-21T19:50:20.703Z",
+  "createdAt": "2026-01-17T22:21:32.442Z",
+  "id": "SJ-4I_1lXP3yYzOnBbbuo",
+  "name": "notionSearch",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "path": "getNotion"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "81c7a720-fc2e-4b93-81f4-2f2ac654f573",
+      "name": "MCP Server Trigger",
+      "webhookId": "bb122a61-b27d-4808-b7dc-6033f2b09c58",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bMR59ykKdOIA8mmY",
+          "name": "N8N-Header-Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many database pages in Notion",
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "2eff939b-da20-8085-8aab-e82fd3be2a25",
+          "mode": "list",
+          "cachedResultName": "Knowledge Base",
+          "cachedResultUrl": "https://www.notion.so/2eff939bda2080858aabe82fd3be2a25"
+        },
+        "returnAll": true,
+        "simple": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify', ``, 'boolean') }}",
+        "filterType": "manual",
+        "filters": {
+          "conditions": [
+            {
+              "key": "Content|rich_text",
+              "condition": "contains",
+              "richTextValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Text', `Content`, 'string') }}"
+            },
+            {
+              "key": "Title|title",
+              "condition": "contains",
+              "titleValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions1_Title', `Title`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "7ad06e83-f43e-4c6a-8f77-03517cc7cfd6",
+      "name": "getManyResults",
+      "credentials": {
+        "notionApi": {
+          "id": "3fHRfNFuVaBVdXOX",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "getManyResults": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "muXPMz9FAT3fMK6g"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "281d464e-0de0-41b7-9407-cb157254e745",
+  "activeVersionId": "281d464e-0de0-41b7-9407-cb157254e745",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-17T22:21:32.442Z",
+      "createdAt": "2026-01-17T22:21:32.442Z",
+      "role": "workflow:owner",
+      "workflowId": "SJ-4I_1lXP3yYzOnBbbuo",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-21T19:50:26.687Z",
+    "createdAt": "2026-01-21T19:50:20.706Z",
+    "versionId": "281d464e-0de0-41b7-9407-cb157254e745",
+    "workflowId": "SJ-4I_1lXP3yYzOnBbbuo",
+    "nodes": [
+      {
+        "parameters": {
+          "authentication": "headerAuth",
+          "path": "getNotion"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "81c7a720-fc2e-4b93-81f4-2f2ac654f573",
+        "name": "MCP Server Trigger",
+        "webhookId": "bb122a61-b27d-4808-b7dc-6033f2b09c58",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "bMR59ykKdOIA8mmY",
+            "name": "N8N-Header-Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Get many database pages in Notion",
+          "resource": "databasePage",
+          "operation": "getAll",
+          "databaseId": {
+            "__rl": true,
+            "value": "2eff939b-da20-8085-8aab-e82fd3be2a25",
+            "mode": "list",
+            "cachedResultName": "Knowledge Base",
+            "cachedResultUrl": "https://www.notion.so/2eff939bda2080858aabe82fd3be2a25"
+          },
+          "returnAll": true,
+          "simple": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify', ``, 'boolean') }}",
+          "filterType": "manual",
+          "filters": {
+            "conditions": [
+              {
+                "key": "Content|rich_text",
+                "condition": "contains",
+                "richTextValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Text', `Content`, 'string') }}"
+              },
+              {
+                "key": "Title|title",
+                "condition": "contains",
+                "titleValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions1_Title', `Title`, 'string') }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.notionTool",
+        "typeVersion": 2.2,
+        "position": [
+          96,
+          208
+        ],
+        "id": "7ad06e83-f43e-4c6a-8f77-03517cc7cfd6",
+        "name": "getManyResults",
+        "credentials": {
+          "notionApi": {
+            "id": "3fHRfNFuVaBVdXOX",
+            "name": "Notion account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "getManyResults": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T16:44:28.062Z",
+      "createdAt": "2026-01-20T16:44:28.062Z",
+      "id": "BzfH6i5zleyhVb9Q",
+      "name": "articleSearch"
+    },
+    {
+      "updatedAt": "2026-01-20T16:45:41.976Z",
+      "createdAt": "2026-01-20T16:45:41.976Z",
+      "id": "MvIrgNrO6o2qoQFB",
+      "name": "notion"
+    },
+    {
+      "updatedAt": "2026-01-20T16:45:48.224Z",
+      "createdAt": "2026-01-20T16:45:48.224Z",
+      "id": "bOGG9KjkxhvEjDID",
+      "name": "database"
+    }
+  ]
+}

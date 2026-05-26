@@ -1,0 +1,245 @@
+{
+  "updatedAt": "2025-12-12T17:11:24.374Z",
+  "createdAt": "2025-12-11T01:53:14.504Z",
+  "id": "7rXNfJDlwlTQrlCA",
+  "name": "Google_Sheets_Workflow",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -528,
+        -128
+      ],
+      "id": "34ab0944-8442-4270-8010-c4190f2275f4",
+      "name": "When chat message received",
+      "webhookId": "65294d56-42a0-4265-a3ed-38f70eef90ed"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful assistant\n\n## Colum headings\n\n- ID\t\n- First\t\n- Last\t\n- email\t\n- status"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -288,
+        -128
+      ],
+      "id": "6e02995b-ee23-4fe7-800c-c7a368c85be9",
+      "name": "AI Agent",
+      "alwaysOutputData": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        112
+      ],
+      "id": "0a4d8be5-8cfa-4f7e-86a3-02609be7a135",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:5678/mcp/b1e0bf03-4952-4be9-828f-7a7305040703",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        128
+      ],
+      "id": "b393e997-7d5a-41d5-ba59-d9cbda401bf6",
+      "name": "MCP Client"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "c3c6648a-29f1-4fe3-9c48-c9033ff2c863",
+  "activeVersionId": "c3c6648a-29f1-4fe3-9c48-c9033ff2c863",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-11T01:53:14.504Z",
+      "createdAt": "2025-12-11T01:53:14.504Z",
+      "role": "workflow:owner",
+      "workflowId": "7rXNfJDlwlTQrlCA",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-12T17:11:24.376Z",
+    "createdAt": "2025-12-12T17:11:24.376Z",
+    "versionId": "c3c6648a-29f1-4fe3-9c48-c9033ff2c863",
+    "workflowId": "7rXNfJDlwlTQrlCA",
+    "nodes": [
+      {
+        "parameters": {
+          "public": true,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          -528,
+          -128
+        ],
+        "id": "34ab0944-8442-4270-8010-c4190f2275f4",
+        "name": "When chat message received",
+        "webhookId": "65294d56-42a0-4265-a3ed-38f70eef90ed"
+      },
+      {
+        "parameters": {
+          "options": {
+            "systemMessage": "You are a helpful assistant\n\n## Colum headings\n\n- ID\t\n- First\t\n- Last\t\n- email\t\n- status"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          -288,
+          -128
+        ],
+        "id": "6e02995b-ee23-4fe7-800c-c7a368c85be9",
+        "name": "AI Agent",
+        "alwaysOutputData": true,
+        "retryOnFail": false
+      },
+      {
+        "parameters": {
+          "model": "llama3.2:latest",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          -400,
+          112
+        ],
+        "id": "0a4d8be5-8cfa-4f7e-86a3-02609be7a135",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "Vob7VZOr0cQCHgsU",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "endpointUrl": "http://localhost:5678/mcp/b1e0bf03-4952-4be9-828f-7a7305040703",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+        "typeVersion": 1.2,
+        "position": [
+          -16,
+          128
+        ],
+        "id": "b393e997-7d5a-41d5-ba59-d9cbda401bf6",
+        "name": "MCP Client"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MCP Client": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}

@@ -1,0 +1,292 @@
+{
+  "updatedAt": "2026-02-10T21:04:40.592Z",
+  "createdAt": "2025-12-28T15:34:26.048Z",
+  "id": "8YAGr0M3BfHXL2E5",
+  "name": "sendEmail",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "path": "sendEmail"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d5692cb6-3dd4-4fb1-8593-5adf75c480ac",
+      "name": "MCP Server Trigger",
+      "webhookId": "d3ff01c7-5b5b-4d6b-b0d7-242076c05ca7",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bMR59ykKdOIA8mmY",
+          "name": "N8N-Header-Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "{\n  \"name\": \"send_email\",\n  \"description\": \"Sends an email to a specified recipient\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"to\": {\n        \"type\": \"string\",\n        \"description\": \"Recipient email address\"\n      },\n      \"subject\": {\n        \"type\": \"string\", \n        \"description\": \"Email subject line\"\n      },\n      \"message\": {\n        \"type\": \"string\",\n        \"description\": \"Email body content\"\n      }\n    },\n    \"required\": [\"to\", \"subject\", \"message\"]\n  }\n}Send a message in Gmail",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Topic Updates from The Lycra Company"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        224
+      ],
+      "id": "6b9f5b22-f916-4f2f-a0be-19b4f04f8d8c",
+      "name": "gmail-send-mail",
+      "webhookId": "e3fe41ee-4e32-41b2-8cda-52b989ad2d98",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "{\n  \"name\": \"send_email\",\n  \"description\": \"Sends an email to a specified recipient\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"to\": {\n        \"type\": \"string\",\n        \"description\": \"Recipient email address\"\n      },\n      \"subject\": {\n        \"type\": \"string\", \n        \"description\": \"Email subject line\"\n      },\n      \"message\": {\n        \"type\": \"string\",\n        \"description\": \"Email body content\"\n      }\n    },\n    \"required\": [\"to\", \"subject\", \"message\"]\n  }\n}Send a message in Gmail",
+        "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "additionalFields": {
+          "from": "Topics from The Lycra Company",
+          "bodyContentType": "html"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTool",
+      "typeVersion": 2,
+      "position": [
+        480,
+        208
+      ],
+      "id": "350eefdf-adf4-45b4-9edd-37efe1c7a822",
+      "name": "outlook-send-mail",
+      "webhookId": "5b0ff128-44f4-4ea9-a9e8-15eb7d3ff516",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "SQBMOY6rtmWYJrST",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        224
+      ],
+      "id": "b69fb99b-bade-4996-a6aa-5ecd00a7fbb1",
+      "name": "Call n8n Workflow Tool"
+    }
+  ],
+  "connections": {
+    "gmail-send-mail": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "outlook-send-mail": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call n8n Workflow Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "muXPMz9FAT3fMK6g"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "61398c75-52d9-40f4-a09f-b10a6442f6bd",
+  "activeVersionId": "4bdbe4c0-2ed0-48f1-a40c-c6d747c96485",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-28T15:34:26.048Z",
+      "createdAt": "2025-12-28T15:34:26.048Z",
+      "role": "workflow:owner",
+      "workflowId": "8YAGr0M3BfHXL2E5",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-20T16:25:11.001Z",
+    "createdAt": "2026-01-20T16:24:53.199Z",
+    "versionId": "4bdbe4c0-2ed0-48f1-a40c-c6d747c96485",
+    "workflowId": "8YAGr0M3BfHXL2E5",
+    "nodes": [
+      {
+        "parameters": {
+          "authentication": "headerAuth",
+          "path": "sendEmail"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "d5692cb6-3dd4-4fb1-8593-5adf75c480ac",
+        "name": "MCP Server Trigger",
+        "webhookId": "d3ff01c7-5b5b-4d6b-b0d7-242076c05ca7",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "bMR59ykKdOIA8mmY",
+            "name": "N8N-Header-Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "{\n  \"name\": \"send_email\",\n  \"description\": \"Sends an email to a specified recipient\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"to\": {\n        \"type\": \"string\",\n        \"description\": \"Recipient email address\"\n      },\n      \"subject\": {\n        \"type\": \"string\", \n        \"description\": \"Email subject line\"\n      },\n      \"message\": {\n        \"type\": \"string\",\n        \"description\": \"Email body content\"\n      }\n    },\n    \"required\": [\"to\", \"subject\", \"message\"]\n  }\n}Send a message in Gmail",
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+          "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+          "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "options": {
+            "appendAttribution": false,
+            "senderName": "Topic Updates from The Lycra Company"
+          }
+        },
+        "type": "n8n-nodes-base.gmailTool",
+        "typeVersion": 2.2,
+        "position": [
+          16,
+          224
+        ],
+        "id": "6b9f5b22-f916-4f2f-a0be-19b4f04f8d8c",
+        "name": "gmail-send-mail",
+        "webhookId": "e3fe41ee-4e32-41b2-8cda-52b989ad2d98",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "UgfIFsEzUov3SEVK",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "{\n  \"name\": \"send_email\",\n  \"description\": \"Sends an email to a specified recipient\",\n  \"parameters\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"to\": {\n        \"type\": \"string\",\n        \"description\": \"Recipient email address\"\n      },\n      \"subject\": {\n        \"type\": \"string\", \n        \"description\": \"Email subject line\"\n      },\n      \"message\": {\n        \"type\": \"string\",\n        \"description\": \"Email body content\"\n      }\n    },\n    \"required\": [\"to\", \"subject\", \"message\"]\n  }\n}Send a message in Gmail",
+          "toRecipients": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+          "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+          "bodyContent": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+          "additionalFields": {
+            "from": "Topics from The Lycra Company",
+            "bodyContentType": "html"
+          }
+        },
+        "type": "n8n-nodes-base.microsoftOutlookTool",
+        "typeVersion": 2,
+        "position": [
+          224,
+          224
+        ],
+        "id": "350eefdf-adf4-45b4-9edd-37efe1c7a822",
+        "name": "outlook-send-mail",
+        "webhookId": "5b0ff128-44f4-4ea9-a9e8-15eb7d3ff516",
+        "credentials": {
+          "microsoftOutlookOAuth2Api": {
+            "id": "SQBMOY6rtmWYJrST",
+            "name": "Microsoft Outlook account"
+          }
+        },
+        "disabled": true
+      }
+    ],
+    "connections": {
+      "gmail-send-mail": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "outlook-send-mail": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1.2",
+    "description": "Added Header Key and Error Workflow",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-29T18:31:54.697Z",
+      "createdAt": "2025-12-29T18:31:54.697Z",
+      "id": "uFi2tCfwe2HRZBCd",
+      "name": "Warp MCP Client"
+    },
+    {
+      "updatedAt": "2025-12-29T18:31:40.309Z",
+      "createdAt": "2025-12-29T18:31:40.309Z",
+      "id": "aCTxuGavtPCGS4aR",
+      "name": "MCP with Trigger"
+    },
+    {
+      "updatedAt": "2025-12-29T17:34:44.389Z",
+      "createdAt": "2025-12-29T17:34:44.389Z",
+      "id": "ePRll2KlFXoo4sVV",
+      "name": "email"
+    }
+  ]
+}

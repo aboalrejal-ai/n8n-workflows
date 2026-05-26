@@ -1,0 +1,1331 @@
+{
+  "updatedAt": "2026-01-17T18:21:15.604Z",
+  "createdAt": "2025-12-15T19:37:03.717Z",
+  "id": "kqsBKbZe1v133eZ0",
+  "name": "Build an All-Source Knowledge Assistant with Claude, RAG, Perplexity, and Drive",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "name": "When chat message received",
+      "parameters": {
+        "options": {}
+      },
+      "position": [
+        1408,
+        1088
+      ],
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "webhookId": "87d0712c-9ce3-4f5d-a715-8a1f5f1574c6",
+      "id": "f640b447-675a-40cf-8a79-e65b1a3ac893"
+    },
+    {
+      "name": "Postgres Chat Memory",
+      "parameters": {},
+      "position": [
+        1664,
+        1440
+      ],
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "id": "1b7ec974-9b81-40fa-aafc-068fe13fac7e"
+    },
+    {
+      "name": "Embeddings OpenAI",
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "position": [
+        2384,
+        1648
+      ],
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "id": "e6e198e3-de80-44af-b496-6c91ba620bf1"
+    },
+    {
+      "name": "Reranker Cohere",
+      "parameters": {},
+      "position": [
+        2544,
+        1648
+      ],
+      "type": "@n8n/n8n-nodes-langchain.rerankerCohere",
+      "typeVersion": 1,
+      "id": "f716e16d-d852-4a4c-8471-b91884bf2a4e"
+    },
+    {
+      "name": "Anthropic Chat Model",
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "cachedResultName": "Claude 4 Sonnet",
+          "mode": "list",
+          "value": "claude-sonnet-4-20250514"
+        },
+        "options": {}
+      },
+      "position": [
+        1488,
+        1440
+      ],
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "id": "deb8b15e-242b-4f9d-86ea-d9a2d518faf2"
+    },
+    {
+      "name": "structured data",
+      "parameters": {
+        "columns": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "autoMapInputData",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Keyword",
+              "id": "Keyword",
+              "required": true,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Avg monthly searches",
+              "id": "Avg monthly searches",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Competition",
+              "id": "Competition",
+              "removed": true,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Competition indexed value",
+              "id": "Competition indexed value",
+              "removed": true,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Low range bid",
+              "id": "Low range bid",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "High range bid",
+              "id": "High range bid",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Score",
+              "id": "Score",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Base score",
+              "id": "Base score",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "cpc median",
+              "id": "cpc median",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "n chars",
+              "id": "n chars",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "relevance bonus",
+              "id": "relevance bonus",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Scored?",
+              "id": "Scored?",
+              "removed": true,
+              "required": false,
+              "type": "boolean"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Primary used",
+              "id": "Primary used",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Secondary used?",
+              "id": "Secondary used?",
+              "removed": true,
+              "required": false,
+              "type": "number"
+            }
+          ],
+          "value": {}
+        },
+        "options": {},
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Table', ``, 'string') }}"
+        }
+      },
+      "position": [
+        2096,
+        1504
+      ],
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "id": "e4d293ed-6b0e-4f3b-84f8-6388845dba4b"
+    },
+    {
+      "name": "General knowledge",
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "options": {},
+        "tableName": {
+          "__rl": true,
+          "cachedResultName": "danelfin",
+          "mode": "list",
+          "value": "danelfin"
+        },
+        "toolDescription": "Acces information About (YOUR COMPANY)",
+        "useReranker": true
+      },
+      "position": [
+        2416,
+        1488
+      ],
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "id": "dda78f62-f4b4-49b3-b921-ae7af7f354ad"
+    },
+    {
+      "name": "When clicking ‘Execute workflow’",
+      "parameters": {},
+      "position": [
+        1392,
+        400
+      ],
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "id": "aabe70ed-52a2-427e-b4be-43754483226e"
+    },
+    {
+      "name": "Download file",
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "cachedResultName": "1.0.zip",
+          "cachedResultUrl": "https://drive.google.com/file/d/1B10ODCBzQixzx1wxfA1Nsrnz8a8o2vzV/view?usp=drivesdk",
+          "mode": "list",
+          "value": "1B10ODCBzQixzx1wxfA1Nsrnz8a8o2vzV"
+        },
+        "operation": "download",
+        "options": {}
+      },
+      "position": [
+        1600,
+        400
+      ],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "id": "616fa4e4-bc19-44ea-bae1-7fb14467ea28"
+    },
+    {
+      "name": "Default Data Loader1",
+      "parameters": {
+        "dataType": "binary",
+        "options": {},
+        "textSplittingMode": "custom"
+      },
+      "position": [
+        1952,
+        624
+      ],
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "id": "099d18e4-155e-42fa-b741-2b9be66a5d9e"
+    },
+    {
+      "name": "Recursive Character Text Splitter1",
+      "parameters": {
+        "options": {}
+      },
+      "position": [
+        2032,
+        832
+      ],
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "id": "6a7709e9-beac-4b02-bf1e-955d68332f26"
+    },
+    {
+      "name": "Add to Supabase Vector DB",
+      "parameters": {
+        "mode": "insert",
+        "options": {},
+        "tableName": {
+          "__rl": true,
+          "cachedResultName": "danelfin",
+          "mode": "list",
+          "value": "danelfin"
+        }
+      },
+      "position": [
+        1840,
+        400
+      ],
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "id": "81d5016b-ea4a-4214-995f-e514a06a3758"
+    },
+    {
+      "name": "Embeddings OpenAI1",
+      "parameters": {
+        "options": {}
+      },
+      "position": [
+        1824,
+        624
+      ],
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "id": "0bfcd9f5-2b0f-4000-aa87-cf3cd1eaf6cb"
+    },
+    {
+      "name": "Think",
+      "parameters": {
+        "description": "Use the tool to think about the user query and the actual data extracted."
+      },
+      "position": [
+        1824,
+        1440
+      ],
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "id": "8f2b9ced-5626-46a5-ae14-cd74027efc70"
+    },
+    {
+      "name": "Sticky Note3",
+      "parameters": {
+        "color": 5,
+        "content": "### Always Authenticate Your Server!\nBefore going to production, it's always advised to enable authentication on your MCP server trigger.",
+        "height": 100,
+        "width": 380
+      },
+      "position": [
+        2912,
+        1040
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "b0449e3f-a5d5-43c1-926f-af2cbaa6bb55"
+    },
+    {
+      "name": "When Executed by Another Workflow",
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "operation"
+            },
+            {
+              "name": "folderId"
+            },
+            {
+              "name": "fileId"
+            }
+          ]
+        }
+      },
+      "position": [
+        3360,
+        1536
+      ],
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "id": "3712c650-e795-4f8f-8b71-dea7bb743e3e"
+    },
+    {
+      "name": "Google Drive MCP Server",
+      "parameters": {
+        "path": "a289c719-fb71-4b08-97c6-79d12645dc7e"
+      },
+      "position": [
+        2960,
+        1152
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "webhookId": "a289c719-fb71-4b08-97c6-79d12645dc7e",
+      "id": "734cc792-fa68-4399-894b-568c1896617e"
+    },
+    {
+      "name": "Download File1",
+      "parameters": {
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.fileId }}"
+        },
+        "operation": "download",
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain",
+              "slidesToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "position": [
+        3712,
+        1536
+      ],
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "id": "75568041-4cca-4f35-8b07-51f321b290a9"
+    },
+    {
+      "name": "FileType",
+      "parameters": {
+        "options": {},
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "7b6958ce-d553-4379-a5d6-743f39b342d0",
+                    "leftValue": "={{ $binary.data.mimeType }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "application/pdf"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "outputKey": "pdf",
+              "renameOutput": true
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "d0816a37-ac06-49e3-8d63-17fcd061e33f",
+                    "leftValue": "={{ $binary.data.mimeType }}",
+                    "operator": {
+                      "name": "filter.operator.equals",
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "text/csv"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "outputKey": "csv",
+              "renameOutput": true
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "589540e1-1439-41e3-ba89-b27f5e936190",
+                    "leftValue": "={{\n[\n  'image/jpeg',\n  'image/jpg',\n  'image/png',\n  'image/gif'\n].some(mimeType => $binary.data.mimeType === mimeType)\n}}",
+                    "operator": {
+                      "operation": "true",
+                      "singleValue": true,
+                      "type": "boolean"
+                    },
+                    "rightValue": ""
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "outputKey": "image",
+              "renameOutput": true
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "b8fc61a1-6057-4db3-960e-b8ddcbdd0f31",
+                    "leftValue": "={{ $binary.data.mimeType }}",
+                    "operator": {
+                      "operation": "contains",
+                      "type": "string"
+                    },
+                    "rightValue": "audio"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "outputKey": "audio",
+              "renameOutput": true
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "959d65a6-372f-4978-b2d1-f28aa1e372c6",
+                    "leftValue": "={{ $binary.data.mimeType }}",
+                    "operator": {
+                      "operation": "contains",
+                      "type": "string"
+                    },
+                    "rightValue": "video"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "outputKey": "video",
+              "renameOutput": true
+            }
+          ]
+        }
+      },
+      "position": [
+        3904,
+        1488
+      ],
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "id": "7eea47cf-0c20-4be9-8120-939e3a7e3913"
+    },
+    {
+      "name": "Operation",
+      "parameters": {
+        "options": {},
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "b03bb746-dc4e-469c-b8e6-a34c0aa8d0a6",
+                    "leftValue": "={{ $json.operation }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "readFile"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                }
+              },
+              "outputKey": "ReadFile",
+              "renameOutput": true
+            }
+          ]
+        }
+      },
+      "position": [
+        3536,
+        1536
+      ],
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "id": "ab172bdf-2e50-4076-ab13-bbb78e43f84b"
+    },
+    {
+      "name": "Extract from PDF",
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "position": [
+        4176,
+        1248
+      ],
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "id": "21b573d5-fc98-41e3-9908-a371b2b70a5f"
+    },
+    {
+      "name": "Extract from CSV",
+      "parameters": {
+        "options": {
+          "encoding": "utf-8",
+          "headerRow": false,
+          "includeEmptyCells": true,
+          "relaxQuotes": true
+        }
+      },
+      "position": [
+        4176,
+        1440
+      ],
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "id": "f6a4853f-a64e-4c12-be80-ebbab9001bd8"
+    },
+    {
+      "name": "Get PDF Response",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a481cde3-b8ec-4d97-aa13-4668bd66c24d",
+              "name": "response",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        4336,
+        1248
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "id": "628c333b-ed82-4ebc-af68-879f38f1a3b7"
+    },
+    {
+      "executeOnce": true,
+      "name": "Get CSV Response",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a481cde3-b8ec-4d97-aa13-4668bd66c24d",
+              "name": "response",
+              "type": "string",
+              "value": "={{\n$input.all()\n  .map(item => item.json.row.map(cell => `\"${cell}\"`).join(','))\n  .join('\\n')\n}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        4336,
+        1440
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "id": "8943d5d3-efaa-4dfd-a81c-ddd9d6824b26"
+    },
+    {
+      "name": "Read File From GDrive",
+      "parameters": {
+        "description": "Call this tool to download and read the contents of a file within google drive.",
+        "name": "ReadFile",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $workflow.id }}"
+        },
+        "workflowInputs": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "operation",
+              "id": "operation",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "folderId",
+              "id": "folderId",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "fileId",
+              "id": "fileId",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "fileId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('fileId', ``, 'string') }}",
+            "folderId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('folderId', ``, 'string') }}",
+            "operation": "readFile"
+          }
+        }
+      },
+      "position": [
+        3216,
+        1344
+      ],
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "id": "d572500a-f8ca-4677-b76f-621d06bac1c5"
+    },
+    {
+      "name": "Search Files from Gdrive",
+      "parameters": {
+        "filter": {
+          "driveId": {
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "whatToSearch": "files"
+        },
+        "limit": 10,
+        "options": {},
+        "queryString": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search_Query', ``, 'string') }}",
+        "resource": "fileFolder"
+      },
+      "position": [
+        3024,
+        1376
+      ],
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "id": "234649a2-89ce-4aad-84b3-a6fdbf7dad28"
+    },
+    {
+      "name": "Analyse Image",
+      "parameters": {
+        "inputType": "base64",
+        "modelId": {
+          "__rl": true,
+          "cachedResultName": "GPT-4O-MINI",
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "operation": "analyze",
+        "options": {},
+        "resource": "image"
+      },
+      "position": [
+        4176,
+        1616
+      ],
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "id": "89c3d219-c528-4ef3-9d88-acdafb93350a"
+    },
+    {
+      "name": "Transcribe Audio",
+      "parameters": {
+        "operation": "transcribe",
+        "options": {},
+        "resource": "audio"
+      },
+      "position": [
+        4176,
+        1792
+      ],
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "id": "eb807593-8c36-486a-a300-12b97c596dae"
+    },
+    {
+      "name": "Sticky Note2",
+      "parameters": {
+        "color": 5,
+        "content": "It can be google sheets/ airtable ...",
+        "height": 176
+      },
+      "position": [
+        2016,
+        1456
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "1ae86f9b-d3b2-4f3c-a3fa-3171c488e554"
+    },
+    {
+      "name": "Sticky Note5",
+      "parameters": {
+        "color": 5,
+        "content": "## https://n8n.io/creators/jimleuk/ (Jimleuk build this)\n\n- https://n8n.io/workflows/3634-build-your-own-google-drive-mcp-server/ (click the link for more detailed explanation)\n",
+        "width": 480
+      },
+      "position": [
+        3328,
+        976
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "2f80b171-6dbe-49a3-86d8-390e624dc278"
+    },
+    {
+      "name": "search  about any doc in google drive",
+      "parameters": {
+        "options": {},
+        "sseEndpoint": "https://your instancesse"
+      },
+      "position": [
+        2848,
+        1264
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "id": "81792a8d-d75d-47c0-aae8-02073872c685"
+    },
+    {
+      "name": "Sticky Note6",
+      "parameters": {
+        "color": 5,
+        "content": "### Advanced model of claude or Grok 4 for better results ",
+        "height": 224
+      },
+      "position": [
+        1360,
+        1360
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "224044be-cd73-43ba-8da0-ee536c62bae8"
+    },
+    {
+      "name": "Sticky Note1",
+      "parameters": {
+        "color": 7,
+        "content": "## 2. Handle Multiple Binary Formats via Conversion and AI\n[Read more about the PostgreSQL Node](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.postgres/)\n\nMCP clients (or rather, the AI agents) still expect and require text responses from our MCP server.\nN8N can provide the right conversion tools to parse most text formats such as PDF, CSV and XML.\nFor images, audio and video, consider using multimodal LLMs to describe or transcribe the file instead.",
+        "height": 812,
+        "width": 1180
+      },
+      "position": [
+        3328,
+        1136
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "006c7bb2-8299-4d35-b3dc-9f1bc332c76b"
+    },
+    {
+      "name": "Sticky Note",
+      "parameters": {
+        "color": 7,
+        "content": "## Load data to vector store",
+        "height": 720,
+        "width": 1072
+      },
+      "position": [
+        1312,
+        240
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "1afde2b2-6528-4989-b9ab-8fcf7cf25706"
+    },
+    {
+      "name": "Knowledge Agent",
+      "parameters": {
+        "options": {
+          "systemMessage": "=You are **AI Assistant** for **[your company]**, orchestrated by the `Knowledge Agent` node inside an n8n workflow.  \nYour mission:\n\n1. **Respond clearly and helpfully** to every user request, matching their tone and preferred language.  \n2. **Persist context**: every turn is automatically stored in `Postgres Chat Memory`; use it to maintain continuity, avoid repetition, and recall prior details when relevant.  \n3. **Reason before you act**:  \n   - Call the `Think` tool to outline your plan or ask clarifying questions.  \n   - Invoke the appropriate tools when needed:  \n     • `General knowledge` (Supabase vector store) for internal content from [your company]  \n     • `structured data` (Postgres) for tabular queries  \n     • `search about any doc in google drive` to locate Drive files  \n     • `Read File From GDrive` to download and process PDFs, CSVs, images, audio, or video  \n     • `Message a model in Perplexity` only when you need very recent external web information \n4. **Output format**: reply in well‑structured Markdown—headings, lists, and code when useful. Keep it concise; avoid unnecessary tables.\n\nAdditional notes:  \n- Always cite the data source in your answer (“*from the vector store*,” “*from the analysed CSV*,” etc.).  \n- If anything is ambiguous (e.g., which file to open), ask a precise follow‑up question first.  \n"
+        }
+      },
+      "position": [
+        1712,
+        1088
+      ],
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "id": "41e93fa6-0cdc-48e5-93b7-120948fda3c4"
+    },
+    {
+      "name": "Message a model in Perplexity",
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "position": [
+        1904,
+        1840
+      ],
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "id": "bd89acbe-741f-4d19-b7a4-bfd6a32decfe"
+    },
+    {
+      "name": "Sticky Note4",
+      "parameters": {
+        "color": 5,
+        "content": "### Search for live data in the Web",
+        "height": 224
+      },
+      "position": [
+        1824,
+        1776
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "e4cbdfdb-74b0-42c9-acf2-bdce3d9c1d42"
+    },
+    {
+      "name": "Sticky Note7",
+      "parameters": {
+        "color": 3,
+        "content": "# 📜 Detailed n8n Workflow Description\n\n## Main Flow\n\nThe workflow operates through a three-step process that handles incoming chat messages with intelligent tool orchestration:\n\n1. **Message Trigger**: The `When chat message received` node triggers whenever a user message arrives and passes it directly to the `Knowledge Agent` for processing.\n\n2. **Agent Orchestration**: The `Knowledge Agent` serves as the central orchestrator, registering a comprehensive toolkit of capabilities:\n   - **LLM Processing**: Uses `Anthropic Chat Model` with the *claude-sonnet-4-20250514* model to craft final responses\n   - **Memory Management**: Implements `Postgres Chat Memory` to save and recall conversation context across sessions\n   - **Reasoning Engine**: Incorporates a `Think` tool to force internal chain-of-thought processing before taking any action\n   - **Semantic Search**: Leverages `General knowledge` vector store with OpenAI embeddings (1536-dimensional) and Cohere reranking for intelligent content retrieval\n   - **Structured Queries**: Provides `structured data` Postgres tool for executing queries on relational database tables\n   - **Drive Integration**: Includes `search about any doc in google drive` functionality to locate specific file IDs\n   - **File Processing**: Connects to `Read File From GDrive` sub-workflow for fetching and processing various file formats\n   - **External Intelligence**: Offers `Message a model in Perplexity` for accessing up-to-the-minute web information when internal knowledge proves insufficient\n\n3. **Response Generation**: After invoking the `Think` process, the agent intelligently selects appropriate tools based on the query, integrates results from multiple sources, and returns a comprehensive Markdown-formatted answer to the user.\n\n## Persistent Context Management\n\nThe workflow maintains conversation continuity through `Postgres Chat Memory`, which automatically logs every user-agent exchange. This ensures long-term context retention without requiring manual intervention, allowing for sophisticated multi-turn conversations that build upon previous interactions.\n\n## Semantic Retrieval Pipeline\n\nThe semantic search system operates through a sophisticated two-stage process:\n\n- **Embedding Generation**: `Embeddings OpenAI` converts textual content into high-dimensional vector representations\n- **Relevance Reranking**: `Reranker Cohere` reorders search hits to prioritize the most contextually relevant results\n- **Knowledge Integration**: Processed results feed into the `General knowledge` vector store, providing the agent with relevant internal knowledge snippets for enhanced response accuracy\n\n## Google Drive File Processing\n\nThe file reading capability handles multiple formats through a structured sub-workflow:\n\n1. **Workflow Initiation**: The agent calls `Read File From GDrive` with the selected `fileId` parameter\n2. **Sub-workflow Activation**: `When Executed by Another Workflow` node activates the dedicated file processing sub-workflow\n3. **Operation Validation**: `Operation` node confirms the request type is `readFile`\n4. **File Retrieval**: `Download File1` node retrieves the binary file data from Google Drive\n5. **Format-Specific Processing**: `FileType` node branches processing based on MIME type:\n   - **PDF Files**: Route through `Extract from PDF` → `Get PDF Response` to extract plain text content\n   - **CSV Files**: Process via `Extract from CSV` → `Get CSV Response` to obtain comma-delimited text data\n   - **Image Files**: Analyze using `Analyse Image` with GPT-4o-mini to generate visual descriptions\n   - **Audio/Video Files**: Transcribe using `Transcribe Audio` with Whisper for text transcript generation\n6. **Content Integration**: The extracted text content returns to `Knowledge Agent`, which seamlessly weaves it into the final response\n\n## External Search Capability\n\nWhen internal knowledge sources prove insufficient, the workflow can access current public information through `Message a model in Perplexity`, ensuring responses remain accurate and up-to-date with the latest available information.\n\n## Design Highlights\n\nThe workflow architecture incorporates several key design principles that enhance reliability and reusability:\n\n- **Forced Reasoning**: The mandatory `Think` step significantly reduces hallucinations and prevents tool misuse by requiring deliberate consideration before action\n- **Template Flexibility**: The design is intentionally generic—organizations can replace **[your company]** placeholders with their specific company name and integrate their own credentials for immediate deployment\n- **Documentation Integration**: Sticky notes throughout the canvas serve as inline documentation for workflow creators and maintainers, providing context without affecting runtime performance\n\n## System Benefits\n\nWith this comprehensive architecture, the assistant delivers powerful capabilities including long-term memory retention, semantic knowledge retrieval, multi-format file processing, and contextually rich responses tailored specifically for users at **[your company]**. The system balances sophisticated AI capabilities with practical business requirements, creating a robust foundation for enterprise-grade conversational AI deployment.",
+        "height": 1872,
+        "width": 896
+      },
+      "position": [
+        368,
+        240
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "3f1912f3-6d01-40ce-b065-c43845f4241f"
+    },
+    {
+      "name": "Sticky Note8",
+      "parameters": {
+        "color": 3,
+        "content": "## Need a tailor-made workflow? Tell me about your business and get a free proposal:\n\n**[Start here → Custom Automation Form](https://taskmorphr.com/contact)**\n\n---\n## 📈 Cost-Savings Snapshot  \nCurious what automation could save you?  \nRun the 60-second calculator:\n\n**[ROI / Cost Comparison](https://taskmorphr.com/cost-comparison)**\n\n---\n### ✉️ Reach me directly  \n`paul@taskmorphr.com`",
+        "height": 560,
+        "width": 576
+      },
+      "position": [
+        2416,
+        416
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "3195721b-a357-4c67-bba2-4f34a8901cf4"
+    },
+    {
+      "name": "Sticky Note9",
+      "parameters": {
+        "color": 3,
+        "content": "### 🛠️ Build it yourself  \nBrowse every ready-made workflow:  \n[Full Template Pack — coming soon](https://n8n.io/creators/diagopl/)\n",
+        "height": 128,
+        "width": 224
+      },
+      "position": [
+        2736,
+        816
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "d9777d92-8cab-4939-8aa2-5e5a6f86aaea"
+    }
+  ],
+  "connections": {
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_languageModel"
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "index": 0,
+            "node": "Add to Supabase Vector DB",
+            "type": "ai_document"
+          }
+        ]
+      ]
+    },
+    "Download File1": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "FileType",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Add to Supabase Vector DB",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "index": 0,
+            "node": "General knowledge",
+            "type": "ai_embedding"
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "index": 0,
+            "node": "Add to Supabase Vector DB",
+            "type": "ai_embedding"
+          }
+        ]
+      ]
+    },
+    "Extract from CSV": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Get CSV Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Extract from PDF": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Get PDF Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "FileType": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Extract from PDF",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Extract from CSV",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Analyse Image",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Transcribe Audio",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "General knowledge": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "Operation": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Download File1",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_memory"
+          }
+        ]
+      ]
+    },
+    "Read File From GDrive": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Google Drive MCP Server",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "index": 0,
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter"
+          }
+        ]
+      ]
+    },
+    "Reranker Cohere": {
+      "ai_reranker": [
+        [
+          {
+            "index": 0,
+            "node": "General knowledge",
+            "type": "ai_reranker"
+          }
+        ]
+      ]
+    },
+    "Search Files from Gdrive": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Google Drive MCP Server",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Operation",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Download file",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "search  about any doc in google drive": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "structured data": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "Knowledge Agent",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "6542"
+  },
+  "pinData": {},
+  "versionId": "83cca59f-7a30-49bd-bc2f-4b4e834933ca",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-15T19:37:03.717Z",
+      "createdAt": "2025-12-15T19:37:03.717Z",
+      "role": "workflow:owner",
+      "workflowId": "kqsBKbZe1v133eZ0",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

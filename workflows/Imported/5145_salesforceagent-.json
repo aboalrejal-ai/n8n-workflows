@@ -1,0 +1,418 @@
+{
+  "updatedAt": "2026-02-11T22:36:13.070Z",
+  "createdAt": "2026-02-10T21:26:44.454Z",
+  "id": "8x5BpeREvlNWEaiPgxP9I",
+  "name": "salesForceAgent",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "model": "kimi-k2:1t-cloud",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        128,
+        64
+      ],
+      "id": "01bc8a77-c691-43eb-9296-e03eef39ed4a",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        64
+      ],
+      "id": "45868031-9a89-41fe-a482-f7231c00b7be",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://localhost:5678/mcp/getSalesForce",
+        "authentication": "headerAuth",
+        "include": "selected",
+        "includeTools": [
+          "customerAccountByCountry",
+          "leadsByCustomerandCountry"
+        ],
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        64
+      ],
+      "id": "1ebed073-fe8a-4246-8523-c54f05909e10",
+      "name": "MCP Client",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bMR59ykKdOIA8mmY",
+          "name": "N8N-Header-Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -144
+      ],
+      "id": "49803223-1266-48e1-b148-03bad74eace8",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a data analyst using connected Salesforce tools to acquire data using the parameters provided\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        304,
+        -144
+      ],
+      "id": "61b0581a-5aae-4aae-bc5c-f660daf8e256",
+      "name": "salesForceAgent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"attributes\": {\n    \"type\": \"Account\",\n    \"url\": \"/services/data/v59.0/sobjects/Account/00130000002mOA0AAM\"\n  },\n  \"Id\": \"00130000002mOA0AAM\",\n  \"Name\": \"adidas USA\",\n  \"BillingCountry\": \"United States of America\",\n  \"Phone\": null,\n  \"Website\": null,\n  \"Type\": \"Brand house\",\n  \"Rating\": \"A - Strategic\",\n  \"Site\": \"Portland  USA\",\n  \"Account_Segment__c\": \"Active/Outdoor\",\n  \"Fabric_Process__c\": null,\n  \"CreatedDate\": \"2004-08-10T15:59:06.000+0000\",\n  \"LastModifiedDate\": \"2026-01-16T14:14:53.000+0000\",\n  \"Contacts\": {\n    \"totalSize\": 26,\n    \"done\": true,\n    \"records\": [\n      {\n        \"attributes\": {\n          \"type\": \"Contact\",\n          \"url\": \"/services/data/v59.0/sobjects/Contact/00350000015T2f2AAC\"\n        },\n        \"Id\": \"00350000015T2f2AAC\",\n        \"FirstName\": \"Meredith\",\n        \"LastName\": \"Dingham LEFT COMPANY\",\n        \"Email\": \"meredith.dingham@adidas-group.com\",\n        \"Phone\": \"(971) 234-4264\",\n        \"Title\": \"Senior Material Manager\",\n        \"Department\": null\n      }\n    ]\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        48
+      ],
+      "id": "5d0daca8-ccba-4607-b1e3-60644bb45387",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        64
+      ],
+      "id": "1f26d6f6-1f3d-4975-88ac-45b71ac160c0",
+      "name": "Think"
+    }
+  ],
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "salesForceAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "salesForceAgent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "salesForceAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "salesForceAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "salesForceAgent": {
+      "main": [
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "salesForceAgent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "salesForceAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "muXPMz9FAT3fMK6g",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9a4bb734-6f31-4aad-b145-b7a7083f13c7",
+  "activeVersionId": "21a198af-32e1-4f72-8252-7c93f04f39d8",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-10T21:26:44.454Z",
+      "createdAt": "2026-02-10T21:26:44.454Z",
+      "role": "workflow:owner",
+      "workflowId": "8x5BpeREvlNWEaiPgxP9I",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-11T16:56:43.020Z",
+    "createdAt": "2026-02-11T16:37:46.631Z",
+    "versionId": "21a198af-32e1-4f72-8252-7c93f04f39d8",
+    "workflowId": "8x5BpeREvlNWEaiPgxP9I",
+    "nodes": [
+      {
+        "parameters": {
+          "model": "kimi-k2:1t-cloud",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          144,
+          48
+        ],
+        "id": "01bc8a77-c691-43eb-9296-e03eef39ed4a",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "Vob7VZOr0cQCHgsU",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          352,
+          64
+        ],
+        "id": "45868031-9a89-41fe-a482-f7231c00b7be",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "endpointUrl": "http://localhost:5678/mcp/getSalesForce",
+          "authentication": "headerAuth",
+          "include": "selected",
+          "includeTools": [
+            "customerAccountByCountry",
+            "leadsByCustomerandCountry"
+          ],
+          "options": {
+            "timeout": 60000
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+        "typeVersion": 1.2,
+        "position": [
+          640,
+          64
+        ],
+        "id": "1ebed073-fe8a-4246-8523-c54f05909e10",
+        "name": "MCP Client",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "bMR59ykKdOIA8mmY",
+            "name": "N8N-Header-Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          -144
+        ],
+        "id": "49803223-1266-48e1-b148-03bad74eace8",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "You are a data analyst using connected Salesforce tools to acquire data using the parameters provided\n\n"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3.1,
+        "position": [
+          304,
+          -144
+        ],
+        "id": "61b0581a-5aae-4aae-bc5c-f660daf8e256",
+        "name": "salesForceAgent"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n  \"attributes\": {\n    \"type\": \"Account\",\n    \"url\": \"/services/data/v59.0/sobjects/Account/00130000002mOA0AAM\"\n  },\n  \"Id\": \"00130000002mOA0AAM\",\n  \"Name\": \"adidas USA\",\n  \"BillingCountry\": \"United States of America\",\n  \"Phone\": null,\n  \"Website\": null,\n  \"Type\": \"Brand house\",\n  \"Rating\": \"A - Strategic\",\n  \"Site\": \"Portland  USA\",\n  \"Account_Segment__c\": \"Active/Outdoor\",\n  \"Fabric_Process__c\": null,\n  \"CreatedDate\": \"2004-08-10T15:59:06.000+0000\",\n  \"LastModifiedDate\": \"2026-01-16T14:14:53.000+0000\",\n  \"Contacts\": {\n    \"totalSize\": 26,\n    \"done\": true,\n    \"records\": [\n      {\n        \"attributes\": {\n          \"type\": \"Contact\",\n          \"url\": \"/services/data/v59.0/sobjects/Contact/00350000015T2f2AAC\"\n        },\n        \"Id\": \"00350000015T2f2AAC\",\n        \"FirstName\": \"Meredith\",\n        \"LastName\": \"Dingham LEFT COMPANY\",\n        \"Email\": \"meredith.dingham@adidas-group.com\",\n        \"Phone\": \"(971) 234-4264\",\n        \"Title\": \"Senior Material Manager\",\n        \"Department\": null\n      }\n    ]\n  }\n}"
+        },
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "typeVersion": 1.3,
+        "position": [
+          784,
+          48
+        ],
+        "id": "5d0daca8-ccba-4607-b1e3-60644bb45387",
+        "name": "Structured Output Parser"
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1.1,
+        "position": [
+          496,
+          64
+        ],
+        "id": "1f26d6f6-1f3d-4975-88ac-45b71ac160c0",
+        "name": "Think"
+      }
+    ],
+    "connections": {
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "salesForceAgent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "salesForceAgent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MCP Client": {
+        "ai_tool": [
+          [
+            {
+              "node": "salesForceAgent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "salesForceAgent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "salesForceAgent": {
+        "main": [
+          []
+        ]
+      },
+      "Structured Output Parser": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "salesForceAgent",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Think": {
+        "ai_tool": [
+          [
+            {
+              "node": "salesForceAgent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1.1",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}

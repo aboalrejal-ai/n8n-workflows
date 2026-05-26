@@ -1,0 +1,348 @@
+{
+  "updatedAt": "2026-01-17T18:22:27.612Z",
+  "createdAt": "2025-12-15T19:15:40.549Z",
+  "id": "C2jPyXs64NBrKUsV",
+  "name": "Chat with a  Postgress using AI",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "disabled": true,
+      "name": "When chat message received",
+      "parameters": {
+        "options": {}
+      },
+      "position": [
+        496,
+        -112
+      ],
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "webhookId": "1c0d08f0-abd0-4bdc-beef-370c27aae1a0",
+      "id": "56776157-bf20-41db-a95c-6a19331f20b1"
+    },
+    {
+      "credentials": {
+        "postgres": {
+          "id": "eU8STYFXdclsY4x1",
+          "name": "Postgres account"
+        }
+      },
+      "name": "Postgres",
+      "parameters": {
+        "descriptionType": "manual",
+        "operation": "executeQuery",
+        "options": {},
+        "query": "{{ $fromAI('sql_statement') }}",
+        "toolDescription": "Execute Queries in Postgres Vectordb database Public Schema, specifically document and document chunks tables."
+      },
+      "position": [
+        1040,
+        272
+      ],
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.5,
+      "id": "29b17659-e1d2-4d94-aa0a-2db565942e70"
+    },
+    {
+      "name": "AI Agent",
+      "parameters": {
+        "options": {},
+        "promptType": "define",
+        "text": "={{ $json.body.input_value }}"
+      },
+      "position": [
+        800,
+        48
+      ],
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "id": "81685f3d-7c43-4020-8ca3-6f0c26d5b4cf"
+    },
+    {
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      },
+      "name": "Ollama Chat Model",
+      "parameters": {
+        "model": "deepseek-v3.1:671b-cloud",
+        "options": {}
+      },
+      "position": [
+        672,
+        256
+      ],
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "id": "142f1a31-0319-4ce0-ae94-44a63ef78eff"
+    },
+    {
+      "name": "Webhook",
+      "notes": "//@body results object Query Results\n//@query results string query",
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {},
+        "path": "execute_postgres_ai_query",
+        "responseData": "allEntries",
+        "responseMode": "lastNode"
+      },
+      "position": [
+        496,
+        96
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "7dfcddbf-ac89-4213-be81-d899b2b250b7",
+      "id": "42935a3f-72a0-4217-a71e-31397c8d15f1"
+    },
+    {
+      "name": "Sticky Note",
+      "parameters": {
+        "content": "### To Do\n\nMake Postrgre Operations a subflow tool with all CRUD Operations and Input provide a form for Table Selection"
+      },
+      "position": [
+        704,
+        -240
+      ],
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "id": "6a002485-1619-4dc1-80fb-c98e3064646d"
+    }
+  ],
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "ai_languageModel"
+          }
+        ]
+      ]
+    },
+    "Postgres": {
+      "ai_tool": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "ai_tool"
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "AI Agent",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "2090",
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b578c22d-9796-4899-b417-ace127ac10c3",
+  "activeVersionId": "b578c22d-9796-4899-b417-ace127ac10c3",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-15T19:15:40.549Z",
+      "createdAt": "2025-12-15T19:15:40.549Z",
+      "role": "workflow:owner",
+      "workflowId": "C2jPyXs64NBrKUsV",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-17T18:22:27.615Z",
+    "createdAt": "2026-01-17T18:22:27.615Z",
+    "versionId": "b578c22d-9796-4899-b417-ace127ac10c3",
+    "workflowId": "C2jPyXs64NBrKUsV",
+    "nodes": [
+      {
+        "disabled": true,
+        "name": "When chat message received",
+        "parameters": {
+          "options": {}
+        },
+        "position": [
+          496,
+          -112
+        ],
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.1,
+        "webhookId": "1c0d08f0-abd0-4bdc-beef-370c27aae1a0",
+        "id": "56776157-bf20-41db-a95c-6a19331f20b1"
+      },
+      {
+        "credentials": {
+          "postgres": {
+            "id": "eU8STYFXdclsY4x1",
+            "name": "Postgres account"
+          }
+        },
+        "name": "Postgres",
+        "parameters": {
+          "descriptionType": "manual",
+          "operation": "executeQuery",
+          "options": {},
+          "query": "{{ $fromAI('sql_statement') }}",
+          "toolDescription": "Execute Queries in Postgres Vectordb database Public Schema, specifically document and document chunks tables."
+        },
+        "position": [
+          1040,
+          272
+        ],
+        "type": "n8n-nodes-base.postgresTool",
+        "typeVersion": 2.5,
+        "id": "29b17659-e1d2-4d94-aa0a-2db565942e70"
+      },
+      {
+        "name": "AI Agent",
+        "parameters": {
+          "options": {},
+          "promptType": "define",
+          "text": "={{ $json.body.input_value }}"
+        },
+        "position": [
+          800,
+          48
+        ],
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.8,
+        "id": "81685f3d-7c43-4020-8ca3-6f0c26d5b4cf"
+      },
+      {
+        "credentials": {
+          "ollamaApi": {
+            "id": "Vob7VZOr0cQCHgsU",
+            "name": "Ollama account"
+          }
+        },
+        "name": "Ollama Chat Model",
+        "parameters": {
+          "model": "deepseek-v3.1:671b-cloud",
+          "options": {}
+        },
+        "position": [
+          672,
+          256
+        ],
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "id": "142f1a31-0319-4ce0-ae94-44a63ef78eff"
+      },
+      {
+        "name": "Webhook",
+        "notes": "//@body results object Query Results\n//@query results string query",
+        "parameters": {
+          "httpMethod": "POST",
+          "options": {},
+          "path": "execute_postgres_ai_query",
+          "responseData": "allEntries",
+          "responseMode": "lastNode"
+        },
+        "position": [
+          496,
+          96
+        ],
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "webhookId": "7dfcddbf-ac89-4213-be81-d899b2b250b7",
+        "id": "42935a3f-72a0-4217-a71e-31397c8d15f1"
+      },
+      {
+        "name": "Sticky Note",
+        "parameters": {
+          "content": "### To Do\n\nMake Postrgre Operations a subflow tool with all CRUD Operations and Input provide a form for Table Selection"
+        },
+        "position": [
+          704,
+          -240
+        ],
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "id": "6a002485-1619-4dc1-80fb-c98e3064646d"
+      }
+    ],
+    "connections": {
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "index": 0,
+              "node": "AI Agent",
+              "type": "ai_languageModel"
+            }
+          ]
+        ]
+      },
+      "Postgres": {
+        "ai_tool": [
+          [
+            {
+              "index": 0,
+              "node": "AI Agent",
+              "type": "ai_tool"
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "AI Agent",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "AI Agent",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": null,
+    "description": null,
+    "autosaved": false
+  },
+  "tags": []
+}

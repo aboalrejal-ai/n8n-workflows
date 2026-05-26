@@ -1,0 +1,186 @@
+{
+  "updatedAt": "2026-01-20T18:41:41.788Z",
+  "createdAt": "2025-12-31T21:59:32.303Z",
+  "id": "muXPMz9FAT3fMK6g",
+  "name": "Error Worflow",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Error Trigger",
+      "position": [
+        0,
+        0
+      ],
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "id": "063be4c7-d30c-48fb-b88a-401ac9076a2e"
+    },
+    {
+      "parameters": {
+        "resource": "channelMessage",
+        "teamId": {
+          "__rl": true,
+          "cachedResultName": "WorkFlow Notifications",
+          "mode": "list",
+          "value": "c21f3bd3-a3b8-4459-97ce-6dc2c255488a"
+        },
+        "channelId": {
+          "__rl": true,
+          "cachedResultName": "Actions and Errors",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1%40thread.tacv2/WorkFlow%20Notifications?groupId=c21f3bd3-a3b8-4459-97ce-6dc2c255488a&tenantId=02039216-1f40-4e50-9a19-964122f69012&allowXTenantAccess=True&ngc=True",
+          "mode": "list",
+          "value": "19:_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1@thread.tacv2"
+        },
+        "message": "=Actions and Errors Workflow: {{ $json.execution.url }} {{ $json.execution.error.message }}",
+        "options": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "name": "Create Team Message in WorkFlow Notifications, Actions and Errors Channel",
+      "position": [
+        208,
+        0
+      ],
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "webhookId": "5c759a01-f329-43ba-b858-580280c8ab33",
+      "id": "27cb3680-8cbb-4cc3-a6a7-2859604e5c5b",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "ppTFdCJPrelZRsfP",
+          "name": "Microsoft Teams account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Create Team Message in WorkFlow Notifications, Actions and Errors Channel",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "c5fc0080-538c-47ff-8441-31e783dde0c2",
+  "activeVersionId": "c5fc0080-538c-47ff-8441-31e783dde0c2",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-31T21:59:32.303Z",
+      "createdAt": "2025-12-31T21:59:32.303Z",
+      "role": "workflow:owner",
+      "workflowId": "muXPMz9FAT3fMK6g",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-20T16:19:19.706Z",
+    "createdAt": "2026-01-17T18:23:45.492Z",
+    "versionId": "c5fc0080-538c-47ff-8441-31e783dde0c2",
+    "workflowId": "muXPMz9FAT3fMK6g",
+    "nodes": [
+      {
+        "name": "Error Trigger",
+        "parameters": {},
+        "position": [
+          0,
+          0
+        ],
+        "type": "n8n-nodes-base.errorTrigger",
+        "typeVersion": 1,
+        "id": "063be4c7-d30c-48fb-b88a-401ac9076a2e"
+      },
+      {
+        "credentials": {
+          "microsoftTeamsOAuth2Api": {
+            "id": "ppTFdCJPrelZRsfP",
+            "name": "Microsoft Teams account"
+          }
+        },
+        "name": "Create Team Message in WorkFlow Notifications, Actions and Errors Channel",
+        "parameters": {
+          "channelId": {
+            "__rl": true,
+            "cachedResultName": "Actions and Errors",
+            "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1%40thread.tacv2/WorkFlow%20Notifications?groupId=c21f3bd3-a3b8-4459-97ce-6dc2c255488a&tenantId=02039216-1f40-4e50-9a19-964122f69012&allowXTenantAccess=True&ngc=True",
+            "mode": "list",
+            "value": "19:_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1@thread.tacv2"
+          },
+          "message": "=Actions and Errors Workflow: {{ $json.execution.url }} {{ $json.execution.error.message }}",
+          "options": {
+            "includeLinkToWorkflow": false
+          },
+          "resource": "channelMessage",
+          "teamId": {
+            "__rl": true,
+            "cachedResultName": "WorkFlow Notifications",
+            "mode": "list",
+            "value": "c21f3bd3-a3b8-4459-97ce-6dc2c255488a"
+          }
+        },
+        "position": [
+          208,
+          0
+        ],
+        "type": "n8n-nodes-base.microsoftTeams",
+        "typeVersion": 2,
+        "webhookId": "5c759a01-f329-43ba-b858-580280c8ab33",
+        "id": "27cb3680-8cbb-4cc3-a6a7-2859604e5c5b"
+      }
+    ],
+    "connections": {
+      "Error Trigger": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Create Team Message in WorkFlow Notifications, Actions and Errors Channel",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1",
+    "description": "Generic Error Workflow Handler",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T18:41:30.764Z",
+      "createdAt": "2026-01-20T18:41:30.764Z",
+      "id": "TA8sArl7KY1ZLfux",
+      "name": "error"
+    },
+    {
+      "updatedAt": "2026-01-20T18:41:35.795Z",
+      "createdAt": "2026-01-20T18:41:35.795Z",
+      "id": "ChosREEkgxuBs7BT",
+      "name": "notification"
+    },
+    {
+      "updatedAt": "2026-01-20T18:41:39.740Z",
+      "createdAt": "2026-01-20T18:41:39.740Z",
+      "id": "h6kLSDb2d7z7pOmM",
+      "name": "error logs"
+    }
+  ]
+}

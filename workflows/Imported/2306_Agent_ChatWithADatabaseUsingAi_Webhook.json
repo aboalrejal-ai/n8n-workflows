@@ -1,0 +1,321 @@
+{
+  "updatedAt": "2025-12-30T21:37:38.564Z",
+  "createdAt": "2025-12-15T19:15:40.549Z",
+  "id": "C2jPyXs64NBrKUsV",
+  "name": "Chat with a database using AI",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "73786411-5383-4921-82ee-06b3b582bab7",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "position": [
+        496,
+        -112
+      ],
+      "webhookId": "1c0d08f0-abd0-4bdc-beef-370c27aae1a0",
+      "typeVersion": 1.1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Execute Queries in Postgres Vectordb database Public Schema, specifically document and document chunks tables.",
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('sql_statement') }}",
+        "options": {}
+      },
+      "id": "e65a1558-e0c0-4c4a-a306-90dc6dcb618a",
+      "name": "Postgres",
+      "type": "n8n-nodes-base.postgresTool",
+      "position": [
+        1040,
+        272
+      ],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "eU8STYFXdclsY4x1",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.input_value }}",
+        "options": {}
+      },
+      "id": "57b2b959-9f25-475f-b6bb-842139725411",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        800,
+        48
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v3.1:671b-cloud",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        672,
+        256
+      ],
+      "id": "8ad54d53-b7f5-4c4c-85fb-43345dc258ba",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "execute_postgres_ai_query",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        496,
+        96
+      ],
+      "id": "9e9043a1-ce7c-41f8-99e7-8cbfafa13809",
+      "name": "Webhook",
+      "webhookId": "7dfcddbf-ac89-4213-be81-d899b2b250b7",
+      "notes": "//@body results object Query Results\n//@query results string query"
+    }
+  ],
+  "connections": {
+    "Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "2090",
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "d68a48a6-0a36-4e3f-9576-1aefa2c67918",
+  "activeVersionId": "d68a48a6-0a36-4e3f-9576-1aefa2c67918",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-15T19:15:40.549Z",
+      "createdAt": "2025-12-15T19:15:40.549Z",
+      "role": "workflow:owner",
+      "workflowId": "C2jPyXs64NBrKUsV",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-30T21:35:18.405Z",
+    "createdAt": "2025-12-30T21:35:15.337Z",
+    "versionId": "d68a48a6-0a36-4e3f-9576-1aefa2c67918",
+    "workflowId": "C2jPyXs64NBrKUsV",
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "73786411-5383-4921-82ee-06b3b582bab7",
+        "name": "When chat message received",
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "position": [
+          496,
+          -112
+        ],
+        "webhookId": "1c0d08f0-abd0-4bdc-beef-370c27aae1a0",
+        "typeVersion": 1.1,
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Execute Queries in Postgres Vectordb database Public Schema, specifically document and document chunks tables.",
+          "operation": "executeQuery",
+          "query": "{{ $fromAI('sql_statement') }}",
+          "options": {}
+        },
+        "id": "e65a1558-e0c0-4c4a-a306-90dc6dcb618a",
+        "name": "Postgres",
+        "type": "n8n-nodes-base.postgresTool",
+        "position": [
+          1040,
+          272
+        ],
+        "typeVersion": 2.5,
+        "credentials": {
+          "postgres": {
+            "id": "eU8STYFXdclsY4x1",
+            "name": "Postgres account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.body.input_value }}",
+          "options": {}
+        },
+        "id": "57b2b959-9f25-475f-b6bb-842139725411",
+        "name": "AI Agent",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          800,
+          48
+        ],
+        "typeVersion": 1.8
+      },
+      {
+        "parameters": {
+          "model": "deepseek-v3.1:671b-cloud",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+        "typeVersion": 1,
+        "position": [
+          672,
+          256
+        ],
+        "id": "8ad54d53-b7f5-4c4c-85fb-43345dc258ba",
+        "name": "Ollama Chat Model",
+        "credentials": {
+          "ollamaApi": {
+            "id": "Vob7VZOr0cQCHgsU",
+            "name": "Ollama account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "execute_postgres_ai_query",
+          "responseMode": "lastNode",
+          "responseData": "allEntries",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          496,
+          96
+        ],
+        "id": "9e9043a1-ce7c-41f8-99e7-8cbfafa13809",
+        "name": "Webhook",
+        "webhookId": "7dfcddbf-ac89-4213-be81-d899b2b250b7",
+        "notes": "//@body results object Query Results\n//@query results string query"
+      }
+    ],
+    "connections": {
+      "Postgres": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Ollama Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "Version d68a48a6",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": []
+}

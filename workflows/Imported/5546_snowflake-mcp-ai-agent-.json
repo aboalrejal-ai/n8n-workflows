@@ -1,0 +1,46 @@
+{
+  "updatedAt": "2026-01-12T16:24:50.253Z",
+  "createdAt": "2026-01-12T16:21:15.376Z",
+  "id": "Tr3LsFZMKtuQtpOMg3qT3",
+  "name": "Snowflake MCP AI Agent",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "snowflake_cortex_mcp"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "823ac68b-589b-462f-8c0a-e23430640ea0",
+      "name": "MCP Server Trigger",
+      "webhookId": "cf8f4836-17ec-49b7-b055-1542c2049f68"
+    }
+  ],
+  "connections": {},
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ceb7a7eb-38a0-4243-bca7-84ba225d99db",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-12T16:21:15.376Z",
+      "createdAt": "2026-01-12T16:21:15.376Z",
+      "role": "workflow:owner",
+      "workflowId": "Tr3LsFZMKtuQtpOMg3qT3",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

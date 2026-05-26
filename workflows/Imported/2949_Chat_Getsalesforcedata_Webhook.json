@@ -1,0 +1,272 @@
+{
+  "updatedAt": "2026-02-10T23:12:44.917Z",
+  "createdAt": "2026-02-10T22:28:25.988Z",
+  "id": "PC-nUsyzN9leRhZdo7D_t",
+  "name": "getSalesForceData",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "d0268483-243e-4027-9b05-5422eaf10732",
+      "name": "When chat message received",
+      "webhookId": "cf51eab0-622b-4fd8-92b3-0c6f88e716f2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "8x5BpeREvlNWEaiPgxP9I",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/8x5BpeREvlNWEaiPgxP9I",
+          "cachedResultName": "salesForceAgent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        0
+      ],
+      "id": "11549c8a-2414-4d39-bbbe-87554d7317d5",
+      "name": "callSalesForceAgent"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "format": true
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        0
+      ],
+      "id": "92f79c70-64dc-47ea-be99-4119a8d5f8af",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/swagger-html/salesforce.json",
+        "options": {
+          "append": true
+        }
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        0
+      ],
+      "id": "562de967-e436-4785-94c1-4630f572e694",
+      "name": "Read/Write Files from Disk"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "callSalesForceAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "callSalesForceAgent": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "muXPMz9FAT3fMK6g",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "31d337ba-7911-401f-9d2f-f4b7387a0e6c",
+  "activeVersionId": "31d337ba-7911-401f-9d2f-f4b7387a0e6c",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-10T22:28:25.988Z",
+      "createdAt": "2026-02-10T22:28:25.988Z",
+      "role": "workflow:owner",
+      "workflowId": "PC-nUsyzN9leRhZdo7D_t",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-10T23:15:40.861Z",
+    "createdAt": "2026-02-10T23:12:44.919Z",
+    "versionId": "31d337ba-7911-401f-9d2f-f4b7387a0e6c",
+    "workflowId": "PC-nUsyzN9leRhZdo7D_t",
+    "nodes": [
+      {
+        "parameters": {
+          "options": {
+            "responseMode": "lastNode"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          -240,
+          0
+        ],
+        "id": "d0268483-243e-4027-9b05-5422eaf10732",
+        "name": "When chat message received",
+        "webhookId": "cf51eab0-622b-4fd8-92b3-0c6f88e716f2"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "8x5BpeREvlNWEaiPgxP9I",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/8x5BpeREvlNWEaiPgxP9I",
+            "cachedResultName": "salesForceAgent"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "mode": "each",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.3,
+        "position": [
+          48,
+          0
+        ],
+        "id": "11549c8a-2414-4d39-bbbe-87554d7317d5",
+        "name": "callSalesForceAgent"
+      },
+      {
+        "parameters": {
+          "operation": "toJson",
+          "options": {
+            "format": true
+          }
+        },
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          272,
+          0
+        ],
+        "id": "92f79c70-64dc-47ea-be99-4119a8d5f8af",
+        "name": "Convert to File"
+      },
+      {
+        "parameters": {
+          "operation": "write",
+          "fileName": "/swagger-html/salesforce.json",
+          "options": {
+            "append": true
+          }
+        },
+        "type": "n8n-nodes-base.readWriteFile",
+        "typeVersion": 1.1,
+        "position": [
+          528,
+          0
+        ],
+        "id": "562de967-e436-4785-94c1-4630f572e694",
+        "name": "Read/Write Files from Disk"
+      }
+    ],
+    "connections": {
+      "When chat message received": {
+        "main": [
+          [
+            {
+              "node": "callSalesForceAgent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "callSalesForceAgent": {
+        "main": [
+          [
+            {
+              "node": "Convert to File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert to File": {
+        "main": [
+          [
+            {
+              "node": "Read/Write Files from Disk",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1",
+    "description": "",
+    "autosaved": true
+  },
+  "tags": []
+}

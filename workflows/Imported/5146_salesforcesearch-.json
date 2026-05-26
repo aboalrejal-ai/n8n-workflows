@@ -1,0 +1,80 @@
+{
+  "updatedAt": "2026-01-22T23:46:50.650Z",
+  "createdAt": "2026-01-20T22:53:37.007Z",
+  "id": "QhwIp9jKRey_vw_zj2FmB",
+  "name": "salesForceSearch",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "f3ba0aed-40a9-4259-89c0-bf65d379e691"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "771e193e-8961-4c22-ba24-71db24c56cdc",
+      "name": "MCP Server Trigger",
+      "webhookId": "f3ba0aed-40a9-4259-89c0-bf65d379e691"
+    },
+    {
+      "parameters": {
+        "resource": "search",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.salesforceTool",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "eff81732-9433-4258-b2fa-b3f5dbf49544",
+      "name": "querySalesforce",
+      "credentials": {
+        "salesforceOAuth2Api": {
+          "id": "El72ffp0tQmH4E3g",
+          "name": "Salesforce account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "querySalesforce": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "912d08cb-c1ae-4400-878a-3c710accb8d8",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-01-20T22:53:37.007Z",
+      "createdAt": "2026-01-20T22:53:37.007Z",
+      "role": "workflow:owner",
+      "workflowId": "QhwIp9jKRey_vw_zj2FmB",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

@@ -1,0 +1,352 @@
+{
+  "updatedAt": "2026-02-05T22:53:37.016Z",
+  "createdAt": "2026-01-01T15:44:49.456Z",
+  "id": "mhZahgpE5GkbHMqZ",
+  "name": "Form Submission Workflow with AIAgent",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Contact Me",
+        "formDescription": "Let's connect, complete the form and be added to my Linkedin Contacts for Future Communication",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Name",
+              "fieldLabel": "What is Your Name",
+              "placeholder": "First Name Last Name",
+              "defaultValue": "John Doe",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Email",
+              "fieldLabel": "Email Address",
+              "fieldType": "email",
+              "placeholder": "johndoe@gmail.com",
+              "defaultValue": "johndoe@gmail.com",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Company",
+              "fieldLabel": "Company Name",
+              "placeholder": "Company Name",
+              "defaultValue": "Company Name",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Budget",
+              "fieldLabel": "Budget Estimate",
+              "fieldType": "number",
+              "placeholder": "Budget Estimate",
+              "defaultValue": "$1000",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "6e060cc3-faca-44a3-a4f6-e2b6dd62361b",
+      "name": "On form submission",
+      "webhookId": "26148478-c57d-4a36-98d8-d197fa001d5a"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Budget }}",
+                    "rightValue": 10000,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    },
+                    "id": "f1fd5c70-cada-4fc4-80ac-3cc11466ac41"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Qualified Budget"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4e379fbe-0a01-4b2a-8140-d1146cef0396",
+                    "leftValue": "={{ $json.Budget }}",
+                    "rightValue": 10000,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not Qualified Budget"
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": false
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        0
+      ],
+      "id": "86eb7134-b747-44f6-8047-9a1971573d82",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "channelMessage",
+        "teamId": {
+          "__rl": true,
+          "value": "c21f3bd3-a3b8-4459-97ce-6dc2c255488a",
+          "mode": "list",
+          "cachedResultName": "WorkFlow Notifications"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "19:_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1@thread.tacv2",
+          "mode": "list",
+          "cachedResultName": "Actions and Errors",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1%40thread.tacv2/WorkFlow%20Notifications?groupId=c21f3bd3-a3b8-4459-97ce-6dc2c255488a&tenantId=02039216-1f40-4e50-9a19-964122f69012&allowXTenantAccess=True&ngc=True"
+        },
+        "message": "=Budget Qualified for 2026 - {{ $json.Budget }}\n\nCompany History: {{ $json.output }}",
+        "options": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "87a4dd1f-2448-47ed-a221-431dab5d24bd",
+      "name": "Qualified Opportunity",
+      "webhookId": "f9b8199b-c319-4d11-af36-74d390d5cf79",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "ppTFdCJPrelZRsfP",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "channelMessage",
+        "teamId": {
+          "__rl": true,
+          "value": "c21f3bd3-a3b8-4459-97ce-6dc2c255488a",
+          "mode": "list",
+          "cachedResultName": "WorkFlow Notifications"
+        },
+        "channelId": {
+          "__rl": true,
+          "value": "19:_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1@thread.tacv2",
+          "mode": "list",
+          "cachedResultName": "Actions and Errors",
+          "cachedResultUrl": "https://teams.cloud.microsoft/l/channel/19%3A_QmvseAzn-6kOzqfvaOJQdNjEgK9fp8X0idJYTLlkwI1%40thread.tacv2/WorkFlow%20Notifications?groupId=c21f3bd3-a3b8-4459-97ce-6dc2c255488a&tenantId=02039216-1f40-4e50-9a19-964122f69012&allowXTenantAccess=True&ngc=True"
+        },
+        "message": "=Budget NOT Qualified for 2026 - {{ $json.Budget }} \n\nCompany History: {{ $json.output }}<",
+        "options": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.microsoftTeams",
+      "typeVersion": 2,
+      "position": [
+        720,
+        96
+      ],
+      "id": "d12ed217-4004-4ca9-8318-017b3f46ff80",
+      "name": "Not Qualified",
+      "webhookId": "f9b8199b-c319-4d11-af36-74d390d5cf79",
+      "credentials": {
+        "microsoftTeamsOAuth2Api": {
+          "id": "ppTFdCJPrelZRsfP",
+          "name": "Microsoft Teams account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Look Up infomation about this company: {{ $json.Company }} and create me a one paragraph summary.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -80,
+        -128
+      ],
+      "id": "62d3b782-19bd-4c77-ae87-e007c8c65537",
+      "name": "AI Agent",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        96
+      ],
+      "id": "24277980-c55d-4d07-92bd-be6f226f6dd0",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "Vob7VZOr0cQCHgsU",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        80
+      ],
+      "id": "b1f0960a-483e-4d06-8f5a-3bcc31645a6c",
+      "name": "Merge"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Qualified Opportunity",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Qualified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "69a4bb02-11a8-4a58-959a-bd65ec9e88ae",
+  "activeVersionId": null,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-01T15:44:49.456Z",
+      "createdAt": "2026-01-01T15:44:49.456Z",
+      "role": "workflow:owner",
+      "workflowId": "mhZahgpE5GkbHMqZ",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": null,
+  "tags": []
+}

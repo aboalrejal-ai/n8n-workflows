@@ -1,0 +1,450 @@
+{
+  "updatedAt": "2025-12-31T22:53:25.175Z",
+  "createdAt": "2025-12-12T19:35:42.058Z",
+  "id": "GqiYARXO6B0TTADZ",
+  "name": "Postgres_API_WorkFlow_with_Email",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "get_documents",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -96
+      ],
+      "id": "b65ba331-9704-42bf-8645-cf812ac34aee",
+      "name": "Webhook",
+      "webhookId": "acf9bede-91e2-4493-a9f1-a66faafa9f54",
+      "notesInFlow": true,
+      "notes": "//@body Documents object File Name, Content, Created At\n//@query get string Get 5 Documents from Postgres\n//@body name string The name of the user to process.\n//@body id integer The user's unique ID.\n//@query status string The order status (e.g., \"pending\" or \"complete\")."
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        496,
+        -192
+      ],
+      "id": "a403429c-2232-4781-9206-91e21f5b4425",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list"
+        },
+        "limit": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -176,
+        -96
+      ],
+      "id": "ceefe2ca-aab4-454e-a3dd-fff01d689f03",
+      "name": "Select rows from a table",
+      "credentials": {
+        "postgres": {
+          "id": "eU8STYFXdclsY4x1",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shawnmcrowley@gmail.com",
+        "subject": "Relevant Documents",
+        "message": "=<h3>Here are the grouped results:</h3>\n{{ $json.htmlList }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        0
+      ],
+      "id": "e7fbb48b-628c-4f1a-9c73-5e0d1946ba98",
+      "name": "Send a message",
+      "webhookId": "9c603adb-329e-4c68-b1ed-c294713b0546",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UgfIFsEzUov3SEVK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const docs = items[0].json['Relevant Documents'] || []\nlet htmlList = '<ol>';\nfor (const doc of docs) {\n    \n    htmlList += `<li>\n    <b>File Name:</b> ${doc['filename']}<br>\n    <b>Content:</b> ${doc['content']}<br> \n    <b>Created On:</b> ${doc['created_at']}\n    </li>`\n  \n}\nhtmlList += '</ol>';\n\nreturn [{json: {htmlList}}]\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        0
+      ],
+      "id": "22e47101-6771-40ce-9baf-9993db08648d",
+      "name": "Javascript to Group Results in Formatted HTML"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6a336b8a-d0ea-4d15-96c3-61f9b7817e17",
+              "name": "filename",
+              "value": "={{ $json.filename }}",
+              "type": "string"
+            },
+            {
+              "id": "5b50a82c-2510-41ef-8f66-637831ed87d0",
+              "name": "content",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "4e8aca9e-7a22-4a0f-aee0-9f2445f0f747",
+              "name": "created_at",
+              "value": "={{ $json.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -96
+      ],
+      "id": "1cf6bded-7356-420d-8106-7d5f7ec4ad3e",
+      "name": "Trim Down Fields in Data"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Relevant Documents",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -96
+      ],
+      "id": "d1999d48-6bd4-4d4e-bd3d-c92d65edf2b6",
+      "name": "Aggregate DataSet into one Item for Display"
+    },
+    {
+      "parameters": {
+        "content": "Workflow to Query Data from Postgres via APi Call and both Return Results for Display and generate an HTML Email with Results to Send\n\nFor Swagger OpenAPI Documentation Generation you need to document the NOTES section of your webhook following this format for N8N:\n\n//@body Documents object File Name, Content, Created At\n//@query get string Get 5 Documents from Postgres\n//@body name string The name of the user to process.\n//@body id integer The user's unique ID.\n//@query status string The order status (e.g., \"pending\" or \"complete\").\n\n",
+        "height": 240,
+        "width": 544
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -416,
+        -432
+      ],
+      "typeVersion": 1,
+      "id": "f8edf200-d80c-47fb-bea0-fa7aec43d633",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Select rows from a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Select rows from a table": {
+      "main": [
+        [
+          {
+            "node": "Trim Down Fields in Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Javascript to Group Results in Formatted HTML": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trim Down Fields in Data": {
+      "main": [
+        [
+          {
+            "node": "Aggregate DataSet into one Item for Display",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate DataSet into one Item for Display": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Javascript to Group Results in Formatted HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "dccd1880-8c49-4380-8cec-94b0bd1da8d9",
+  "activeVersionId": "7c71ce86-0da8-4174-9752-f60d6a9d3df7",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-12T19:35:42.058Z",
+      "createdAt": "2025-12-12T19:35:42.058Z",
+      "role": "workflow:owner",
+      "workflowId": "GqiYARXO6B0TTADZ",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2025-12-19T18:52:23.054Z",
+    "createdAt": "2025-12-19T18:51:04.498Z",
+    "versionId": "7c71ce86-0da8-4174-9752-f60d6a9d3df7",
+    "workflowId": "GqiYARXO6B0TTADZ",
+    "nodes": [
+      {
+        "parameters": {
+          "path": "get_documents",
+          "responseMode": "responseNode",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Content-Type",
+                  "value": "application/json"
+                }
+              ]
+            }
+          }
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -448,
+          96
+        ],
+        "id": "b65ba331-9704-42bf-8645-cf812ac34aee",
+        "name": "Webhook",
+        "webhookId": "acf9bede-91e2-4493-a9f1-a66faafa9f54"
+      },
+      {
+        "parameters": {
+          "sendTo": "shawnmcrowley@gmail.com",
+          "subject": "Database Results",
+          "message": "={{ $json.id }} and {{ $json.filename }}",
+          "options": {
+            "senderName": "n8n Workflow Agent"
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          256,
+          48
+        ],
+        "id": "047aaad4-465a-48a3-b54d-991d225be84b",
+        "name": "Send a message",
+        "webhookId": "802c8aec-cc65-4db6-b584-06068fb7ab59",
+        "executeOnce": false,
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "UgfIFsEzUov3SEVK",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "respondWith": "allIncomingItems",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5,
+        "position": [
+          352,
+          -192
+        ],
+        "id": "a403429c-2232-4781-9206-91e21f5b4425",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "operation": "select",
+          "schema": {
+            "__rl": true,
+            "value": "public",
+            "mode": "list",
+            "cachedResultName": "public"
+          },
+          "table": {
+            "__rl": true,
+            "value": "documents",
+            "mode": "list"
+          },
+          "limit": 5,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6,
+        "position": [
+          96,
+          -192
+        ],
+        "id": "ceefe2ca-aab4-454e-a3dd-fff01d689f03",
+        "name": "Select rows from a table",
+        "credentials": {
+          "postgres": {
+            "id": "eU8STYFXdclsY4x1",
+            "name": "Postgres account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Select rows from a table",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Webhook": {
+        "main": [
+          []
+        ]
+      },
+      "Select rows from a table": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send a message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "Version 7c71ce86",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2025-12-29T17:34:37.420Z",
+      "createdAt": "2025-12-29T17:34:37.420Z",
+      "id": "TwNvty41IjyKi2Gs",
+      "name": "postgres"
+    },
+    {
+      "updatedAt": "2025-12-29T17:34:40.494Z",
+      "createdAt": "2025-12-29T17:34:40.494Z",
+      "id": "cWy8iRiCWCE0GUzH",
+      "name": "api"
+    },
+    {
+      "updatedAt": "2025-12-29T17:34:44.389Z",
+      "createdAt": "2025-12-29T17:34:44.389Z",
+      "id": "ePRll2KlFXoo4sVV",
+      "name": "email"
+    },
+    {
+      "updatedAt": "2025-12-29T17:34:53.107Z",
+      "createdAt": "2025-12-29T17:34:53.107Z",
+      "id": "9Fc5QKcLNAXZn653",
+      "name": "code in javascript"
+    }
+  ]
+}

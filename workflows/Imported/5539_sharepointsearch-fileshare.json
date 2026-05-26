@@ -1,0 +1,189 @@
+{
+  "updatedAt": "2026-01-20T21:01:45.658Z",
+  "createdAt": "2026-01-19T17:37:12.771Z",
+  "id": "j1S3MUMT6puE6QTxcxJEt",
+  "name": "sharePointSearch",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "path": "getSharePoint"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4d42485f-2dcb-454d-aae8-f97a16e0fef7",
+      "name": "MCP Server Trigger",
+      "webhookId": "cb6f743c-f189-4ce5-8d54-e4a0856c5a2e",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bMR59ykKdOIA8mmY",
+          "name": "N8N-Header-Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many lists in Microsoft SharePoint",
+        "resource": "list",
+        "site": {
+          "__rl": true,
+          "mode": "id",
+          "value": "lycra.sharepoint.com,17270a6d-e036-4200-b6b6-aaf904af61fb,57eb1c23-ed53-44d2-b741-e06c0d0222b8"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.microsoftSharePointTool",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        240
+      ],
+      "id": "8a6d163c-824a-4b06-9dff-1c71df77977e",
+      "name": "get_lists",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "fZGfgPtwhlnm9R9N",
+          "name": "Microsoft SharePoint account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "get_lists": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "muXPMz9FAT3fMK6g"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "969581a1-93f9-4555-8e05-acbe03ebc29a",
+  "activeVersionId": "146b6198-d228-48ee-ae18-8eeb5bebdc06",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-19T17:37:12.771Z",
+      "createdAt": "2026-01-19T17:37:12.771Z",
+      "role": "workflow:owner",
+      "workflowId": "j1S3MUMT6puE6QTxcxJEt",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-20T19:59:27.793Z",
+    "createdAt": "2026-01-20T19:59:19.577Z",
+    "versionId": "146b6198-d228-48ee-ae18-8eeb5bebdc06",
+    "workflowId": "j1S3MUMT6puE6QTxcxJEt",
+    "nodes": [
+      {
+        "parameters": {
+          "authentication": "headerAuth",
+          "path": "getSharePoint"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ],
+        "id": "4d42485f-2dcb-454d-aae8-f97a16e0fef7",
+        "name": "MCP Server Trigger",
+        "webhookId": "cb6f743c-f189-4ce5-8d54-e4a0856c5a2e",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "bMR59ykKdOIA8mmY",
+            "name": "N8N-Header-Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "descriptionType": "manual",
+          "toolDescription": "Get many lists in Microsoft SharePoint",
+          "resource": "list",
+          "site": {
+            "__rl": true,
+            "value": "lycra.sharepoint.com,17270a6d-e036-4200-b6b6-aaf904af61fb,57eb1c23-ed53-44d2-b741-e06c0d0222b8",
+            "mode": "list",
+            "cachedResultName": "3D FABRIC PLANNING"
+          },
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.microsoftSharePointTool",
+        "typeVersion": 1,
+        "position": [
+          96,
+          208
+        ],
+        "id": "8a6d163c-824a-4b06-9dff-1c71df77977e",
+        "name": "get_lists",
+        "credentials": {
+          "microsoftSharePointOAuth2Api": {
+            "id": "fZGfgPtwhlnm9R9N",
+            "name": "Microsoft SharePoint account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "get_lists": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1",
+    "description": "",
+    "autosaved": false
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T16:33:37.786Z",
+      "createdAt": "2026-01-20T16:33:37.786Z",
+      "id": "iaZEO5lMKzJXOBXS",
+      "name": "fileshare"
+    },
+    {
+      "updatedAt": "2026-01-20T16:33:25.674Z",
+      "createdAt": "2026-01-20T16:33:25.674Z",
+      "id": "rE89JJkoe0SFgSs7",
+      "name": "files"
+    },
+    {
+      "updatedAt": "2026-01-20T16:33:14.731Z",
+      "createdAt": "2026-01-20T16:33:14.731Z",
+      "id": "FrAGRpC8aFqBpsee",
+      "name": "sharePoint"
+    }
+  ]
+}

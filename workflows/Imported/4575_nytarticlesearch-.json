@@ -1,0 +1,288 @@
+{
+  "updatedAt": "2026-01-19T17:16:29.141Z",
+  "createdAt": "2026-01-12T23:34:18.813Z",
+  "id": "3ABhA48NdBQhPXb1IbaS-",
+  "name": "nytArticleSearch",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "### ⚙️ Setup Instructions\n\n1. **Import Workflow**: \nLoad this workflow into your n8n instance\n\n2. **Configure Authentication**: \nSet up apiKey credentials\n   - Type: API Key in query\n   - Key name: api-key\n\n3. **Activate Workflow**:\nEnable the workflow to start the MCP server\n\n4. **Get MCP URL**: \nCopy the webhook URL from the MCP trigger\n\n5. **Connect AI Agent**:\nUse the MCP URL in your AI agent configuration\n\n\n### 💡 Usage Notes\n• Parameters are auto-populated by AI using $fromAI() expressions\n• With 1 API endpoints available as tools\n• Responses maintain original API structure\n\n\n### 🛠️ Customization\n• Add data transformation nodes if needed\n• Implement custom error handling\n• Add logging or monitoring nodes\n\n• Modify parameter defaults in any HTTP request node as needed\n\n### 💬 Need Help?\nPing me on [discord](https://discord.me/cfomodz) for integration guidance and custom automations. Check the [n8n documentation](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolmcp/) for more information.",
+        "height": 1060,
+        "color": 4
+      },
+      "id": "e650abe9-2d96-4be1-a573-7e2905735b8f",
+      "name": "Setup Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🛠️ Article Search MCP Server ✅ 1 operations\n\n### About\nThe Article Search API lets you query New York Times articles from 1851 to present, returning metadata including headlines, abstracts, multimedia links, and article content. Italicized terms in URIs and fields represent variables, while brackets [ ] denote optional parameters.\n\n### 🔧 How it Works\n\nThis workflow converts the Article Search API into an MCP-compatible interface for AI agents.\n\n• **MCP Trigger**: Serves as your server endpoint for AI agent requests\n• **HTTP Request Nodes**: Handle API calls to http://api.nytimes.com/svc/search/v2\n• **AI Expressions**: Automatically populate parameters via `$fromAI()` placeholders\n• **Native Integration**: Returns responses directly to the AI agent\n\n\n### 📋 Available Operations (1 endpoints)\n\n**Stories (1 operations)**\nSearch Articles\n\n",
+        "height": 920,
+        "width": 420
+      },
+      "id": "84e094ce-4dee-48c0-93f4-22ae18fe32ad",
+      "name": "Workflow Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        272,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "path": "getArticle"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        864,
+        16
+      ],
+      "id": "168daf47-16ce-4a80-aec8-8ffe6e25d9ff",
+      "name": "MCP Article Search Server Trigger",
+      "webhookId": "72615cbc-f54b-4b83-b611-6f2eec374103"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Article Search\n\nParameters:\n- Query parameters:\n  • q (optional) - Search query term. Search is performed on the article body, headline and byline.\n  • fq (optional) - \"Filtered search query using standard Lucene syntax. The filter query can be specified with or without a limiting field: label. See Filtering Your Search for more information about filtering.\"\n  • begin_date (optional) - \"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or later.\"\n  • end_date (optional) - \"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or earlier.\"\n  • sort (optional) - \"By default, search results are sorted by their relevance to the query term (q). Use the sort parameter to sort by pub_date.\"\n  • fl (optional) - \"Comma-delimited list of fields (no limit) Limits the fields returned in your search results. By default (unless you include an fl list in your request), the following fields are returned: web_url snippet lead_paragraph abstract print_page blog source multimedia headline keywords pub_date document_type news_desk byline type_of_material _id word_count\"\n  • hl (optional) - Enables highlighting in search results. When set to true, the query term (q) is highlighted in the headline and lead_paragraph fields. Note: If highlighting is enabled, snippet will be returned even if it is not specified in your fl list.\"\n  • page (optional) - \"The value of page corresponds to a set of 10 results (it does not indicate the starting number of the result set). For example, page=0 corresponds to records 0-9. To return records 10-19, set page to 1, not 10.\"\n  • facet_field (optional) - Comma-delimited list of facets Specifies the sets of facet values to include in the facets array at the end of response, which collects the facet values from all the search results. By default no facet fields will be returned. Below is the list of valid facets: section_name document_type type_of_material source day_of_week To learn more about using facets, see Using Facets.\n  • facet_filter (optional) - When set to true, facet counts will respect any applied filters (fq, date range, etc.) in addition to the main query term. To filter facet counts, specifying at least one facet_field is required. To learn more about using facets, see Using Facets.",
+        "url": "=https://api.nytimes.com/svc/search/v2/articlesearch.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "queryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $fromAI('q', 'Search query term. Search is performed on the article body, headline and byline.', 'string') }}"
+            },
+            {
+              "name": "fq",
+              "value": "={{ $fromAI('fq', '\"Filtered search query using standard Lucene syntax. The filter query can be specified with or without a limiting field: label. See Filtering Your Search for more information about filtering.\"', 'string') }}"
+            },
+            {
+              "name": "begin_date",
+              "value": "={{ $fromAI('begin_date', '\"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or later.\"', 'string') }}"
+            },
+            {
+              "name": "end_date",
+              "value": "={{ $fromAI('end_date', '\"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or earlier.\"', 'string') }}"
+            },
+            {
+              "name": "sort",
+              "value": "={{ $fromAI('sort', '\"By default, search results are sorted by their relevance to the query term (q). Use the sort parameter to sort by pub_date.\"', 'string') }}"
+            },
+            {
+              "name": "fl",
+              "value": "={{ $fromAI('fl', '\"Comma-delimited list of fields (no limit) Limits the fields returned in your search results. By default (unless you include an fl list in your request), the following fields are returned: web_url snippet lead_paragraph abstract print_page blog source multimedia headline keywords pub_date document_type news_desk byline type_of_material _id word_count\"', 'string') }}"
+            },
+            {
+              "name": "hl",
+              "value": "={{ $fromAI('hl', 'Enables highlighting in search results. When set to true, the query term (q) is highlighted in the headline and lead_paragraph fields. Note: If highlighting is enabled, snippet will be returned even if it is not specified in your fl list.\"', 'boolean', false) }}"
+            },
+            {
+              "name": "page",
+              "value": "={{ $fromAI('page', '\"The value of page corresponds to a set of 10 results (it does not indicate the starting number of the result set). For example, page=0 corresponds to records 0-9. To return records 10-19, set page to 1, not 10.\"', 'number', 0) }}"
+            },
+            {
+              "name": "facet_field",
+              "value": "={{ $fromAI('facet_field', 'Comma-delimited list of facets Specifies the sets of facet values to include in the facets array at the end of response, which collects the facet values from all the search results. By default no facet fields will be returned. Below is the list of valid facets: section_name document_type type_of_material source day_of_week To learn more about using facets, see Using Facets.', 'string') }}"
+            },
+            {
+              "name": "facet_filter",
+              "value": "={{ $fromAI('facet_filter', 'When set to true, facet counts will respect any applied filters (fq, date range, etc.) in addition to the main query term. To filter facet counts, specifying at least one facet_field is required. To learn more about using facets, see Using Facets.', 'boolean', false) }}"
+            },
+            {
+              "name": "api-key",
+              "value": "G9t36zdbCVu4sOFlwoZinvWWh4wUYxPYYnnm71teMXKKmLKQ"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f9f33a8a-243e-4f5a-86ea-996352836374",
+      "name": "get-articles",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "position": [
+        960,
+        352
+      ],
+      "typeVersion": 4.2
+    }
+  ],
+  "connections": {
+    "get-articles": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Article Search Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "cdd25ab8-5982-462d-b7a3-1169b083d810",
+  "activeVersionId": "cdd25ab8-5982-462d-b7a3-1169b083d810",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-01-12T23:34:18.813Z",
+      "createdAt": "2026-01-12T23:34:18.813Z",
+      "role": "workflow:owner",
+      "workflowId": "3ABhA48NdBQhPXb1IbaS-",
+      "projectId": "aRJv9cLftn98cx8V"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-01-19T17:11:23.191Z",
+    "createdAt": "2026-01-19T17:10:55.244Z",
+    "versionId": "cdd25ab8-5982-462d-b7a3-1169b083d810",
+    "workflowId": "3ABhA48NdBQhPXb1IbaS-",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "### ⚙️ Setup Instructions\n\n1. **Import Workflow**: \nLoad this workflow into your n8n instance\n\n2. **Configure Authentication**: \nSet up apiKey credentials\n   - Type: API Key in query\n   - Key name: api-key\n\n3. **Activate Workflow**:\nEnable the workflow to start the MCP server\n\n4. **Get MCP URL**: \nCopy the webhook URL from the MCP trigger\n\n5. **Connect AI Agent**:\nUse the MCP URL in your AI agent configuration\n\n\n### 💡 Usage Notes\n• Parameters are auto-populated by AI using $fromAI() expressions\n• With 1 API endpoints available as tools\n• Responses maintain original API structure\n\n\n### 🛠️ Customization\n• Add data transformation nodes if needed\n• Implement custom error handling\n• Add logging or monitoring nodes\n\n• Modify parameter defaults in any HTTP request node as needed\n\n### 💬 Need Help?\nPing me on [discord](https://discord.me/cfomodz) for integration guidance and custom automations. Check the [n8n documentation](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolmcp/) for more information.",
+          "height": 1060,
+          "color": 4
+        },
+        "id": "e650abe9-2d96-4be1-a573-7e2905735b8f",
+        "name": "Setup Instructions",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          0,
+          0
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "content": "## 🛠️ Article Search MCP Server ✅ 1 operations\n\n### About\nThe Article Search API lets you query New York Times articles from 1851 to present, returning metadata including headlines, abstracts, multimedia links, and article content. Italicized terms in URIs and fields represent variables, while brackets [ ] denote optional parameters.\n\n### 🔧 How it Works\n\nThis workflow converts the Article Search API into an MCP-compatible interface for AI agents.\n\n• **MCP Trigger**: Serves as your server endpoint for AI agent requests\n• **HTTP Request Nodes**: Handle API calls to http://api.nytimes.com/svc/search/v2\n• **AI Expressions**: Automatically populate parameters via `$fromAI()` placeholders\n• **Native Integration**: Returns responses directly to the AI agent\n\n\n### 📋 Available Operations (1 endpoints)\n\n**Stories (1 operations)**\nSearch Articles\n\n",
+          "height": 920,
+          "width": 420
+        },
+        "id": "84e094ce-4dee-48c0-93f4-22ae18fe32ad",
+        "name": "Workflow Overview",
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          272,
+          0
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "path": "getArticle"
+        },
+        "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+        "typeVersion": 2,
+        "position": [
+          864,
+          16
+        ],
+        "id": "168daf47-16ce-4a80-aec8-8ffe6e25d9ff",
+        "name": "MCP Article Search Server Trigger",
+        "webhookId": "72615cbc-f54b-4b83-b611-6f2eec374103"
+      },
+      {
+        "parameters": {
+          "toolDescription": "Article Search\n\nParameters:\n- Query parameters:\n  • q (optional) - Search query term. Search is performed on the article body, headline and byline.\n  • fq (optional) - \"Filtered search query using standard Lucene syntax. The filter query can be specified with or without a limiting field: label. See Filtering Your Search for more information about filtering.\"\n  • begin_date (optional) - \"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or later.\"\n  • end_date (optional) - \"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or earlier.\"\n  • sort (optional) - \"By default, search results are sorted by their relevance to the query term (q). Use the sort parameter to sort by pub_date.\"\n  • fl (optional) - \"Comma-delimited list of fields (no limit) Limits the fields returned in your search results. By default (unless you include an fl list in your request), the following fields are returned: web_url snippet lead_paragraph abstract print_page blog source multimedia headline keywords pub_date document_type news_desk byline type_of_material _id word_count\"\n  • hl (optional) - Enables highlighting in search results. When set to true, the query term (q) is highlighted in the headline and lead_paragraph fields. Note: If highlighting is enabled, snippet will be returned even if it is not specified in your fl list.\"\n  • page (optional) - \"The value of page corresponds to a set of 10 results (it does not indicate the starting number of the result set). For example, page=0 corresponds to records 0-9. To return records 10-19, set page to 1, not 10.\"\n  • facet_field (optional) - Comma-delimited list of facets Specifies the sets of facet values to include in the facets array at the end of response, which collects the facet values from all the search results. By default no facet fields will be returned. Below is the list of valid facets: section_name document_type type_of_material source day_of_week To learn more about using facets, see Using Facets.\n  • facet_filter (optional) - When set to true, facet counts will respect any applied filters (fq, date range, etc.) in addition to the main query term. To filter facet counts, specifying at least one facet_field is required. To learn more about using facets, see Using Facets.",
+          "url": "=https://api.nytimes.com/svc/search/v2/articlesearch.json",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "queryAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "q",
+                "value": "={{ $fromAI('q', 'Search query term. Search is performed on the article body, headline and byline.', 'string') }}"
+              },
+              {
+                "name": "fq",
+                "value": "={{ $fromAI('fq', '\"Filtered search query using standard Lucene syntax. The filter query can be specified with or without a limiting field: label. See Filtering Your Search for more information about filtering.\"', 'string') }}"
+              },
+              {
+                "name": "begin_date",
+                "value": "={{ $fromAI('begin_date', '\"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or later.\"', 'string') }}"
+              },
+              {
+                "name": "end_date",
+                "value": "={{ $fromAI('end_date', '\"Format: YYYYMMDD Restricts responses to results with publication dates of the date specified or earlier.\"', 'string') }}"
+              },
+              {
+                "name": "sort",
+                "value": "={{ $fromAI('sort', '\"By default, search results are sorted by their relevance to the query term (q). Use the sort parameter to sort by pub_date.\"', 'string') }}"
+              },
+              {
+                "name": "fl",
+                "value": "={{ $fromAI('fl', '\"Comma-delimited list of fields (no limit) Limits the fields returned in your search results. By default (unless you include an fl list in your request), the following fields are returned: web_url snippet lead_paragraph abstract print_page blog source multimedia headline keywords pub_date document_type news_desk byline type_of_material _id word_count\"', 'string') }}"
+              },
+              {
+                "name": "hl",
+                "value": "={{ $fromAI('hl', 'Enables highlighting in search results. When set to true, the query term (q) is highlighted in the headline and lead_paragraph fields. Note: If highlighting is enabled, snippet will be returned even if it is not specified in your fl list.\"', 'boolean', false) }}"
+              },
+              {
+                "name": "page",
+                "value": "={{ $fromAI('page', '\"The value of page corresponds to a set of 10 results (it does not indicate the starting number of the result set). For example, page=0 corresponds to records 0-9. To return records 10-19, set page to 1, not 10.\"', 'number', 0) }}"
+              },
+              {
+                "name": "facet_field",
+                "value": "={{ $fromAI('facet_field', 'Comma-delimited list of facets Specifies the sets of facet values to include in the facets array at the end of response, which collects the facet values from all the search results. By default no facet fields will be returned. Below is the list of valid facets: section_name document_type type_of_material source day_of_week To learn more about using facets, see Using Facets.', 'string') }}"
+              },
+              {
+                "name": "facet_filter",
+                "value": "={{ $fromAI('facet_filter', 'When set to true, facet counts will respect any applied filters (fq, date range, etc.) in addition to the main query term. To filter facet counts, specifying at least one facet_field is required. To learn more about using facets, see Using Facets.', 'boolean', false) }}"
+              },
+              {
+                "name": "api-key",
+                "value": "G9t36zdbCVu4sOFlwoZinvWWh4wUYxPYYnnm71teMXKKmLKQ"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "f9f33a8a-243e-4f5a-86ea-996352836374",
+        "name": "get-articles",
+        "type": "n8n-nodes-base.httpRequestTool",
+        "position": [
+          960,
+          352
+        ],
+        "typeVersion": 4.2
+      }
+    ],
+    "connections": {
+      "get-articles": {
+        "ai_tool": [
+          [
+            {
+              "node": "MCP Article Search Server Trigger",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Shawn Crowley",
+    "name": "v1.2",
+    "description": "Changed names and description to follow MCP best practices",
+    "autosaved": false
+  },
+  "tags": []
+}
