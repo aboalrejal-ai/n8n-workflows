@@ -99,84 +99,40 @@ def update_readme_stats(stats):
 
     # Define replacement patterns and their new values
     replacements = [
-        # Main collection description
+        # Workflows Badge
         (
-            r"A professionally organized collection of \*\*[\d,]+\s+n8n workflows\*\*",
-            f"A professionally organized collection of **{stats['total_workflows']:,} n8n workflows**",
+            r"badge/Workflows-\d+\+-blue",
+            f"badge/Workflows-{stats['total_workflows']}+-blue",
         ),
-        # Total workflows in various contexts
+        # Integrations Badge
         (
-            r"- \*\*[\d,]+\s+workflows\*\* with meaningful",
-            f"- **{stats['total_workflows']:,} workflows** with meaningful",
+            r"badge/Integrations-\d+\+-green",
+            f"badge/Integrations-{stats['unique_integrations']}+-green",
         ),
-        # Statistics section
+        # Numbers - Workflows
         (
-            r"- \*\*Total Workflows\*\*: [\d,]+",
-            f"- **Total Workflows**: {stats['total_workflows']:,}",
+            r"-\s+\*\*[\d,]+\*\*\s+Production-Ready Workflows",
+            f"- **{stats['total_workflows']:,}** Production-Ready Workflows",
         ),
+        # Numbers - Integrations
         (
-            r"- \*\*Active Workflows\*\*: [\d,]+ \([\d.]+%",
-            f"- **Active Workflows**: {stats['active_workflows']:,} ({(stats['active_workflows'] / stats['total_workflows'] * 100):.1f}%",
+            r"-\s+\*\*[\d,]+\*\*\s+Unique Integrations",
+            f"- **{stats['unique_integrations']:,}** Unique Integrations",
         ),
+        # Numbers - Total Nodes
         (
-            r"- \*\*Total Nodes\*\*: [\d,]+ \(avg [\d.]+ nodes",
-            f"- **Total Nodes**: {stats['total_nodes']:,} (avg {(stats['total_nodes'] / stats['total_workflows']):.1f} nodes",
+            r"-\s+\*\*[\d,]+\*\*\s+Total Nodes",
+            f"- **{stats['total_nodes']:,}** Total Nodes",
         ),
+        # Numbers - Categories
         (
-            r"- \*\*Unique Integrations\*\*: [\d,]+ different",
-            f"- **Unique Integrations**: {stats['unique_integrations']:,} different",
+            r"-\s+\*\*[\d,]+\*\*\s+Organized Categories",
+            f"- **{stats['categories_count']}** Organized Categories",
         ),
-        # Update complexity/trigger distribution
+        # Folder comment
         (
-            r"- \*\*Complex\*\*: [\d,]+ workflows \([\d.]+%\)",
-            f"- **Complex**: {stats['triggers'].get('Complex', 0):,} workflows ({(stats['triggers'].get('Complex', 0) / stats['total_workflows'] * 100):.1f}%)",
-        ),
-        (
-            r"- \*\*Webhook\*\*: [\d,]+ workflows \([\d.]+%\)",
-            f"- **Webhook**: {stats['triggers'].get('Webhook', 0):,} workflows ({(stats['triggers'].get('Webhook', 0) / stats['total_workflows'] * 100):.1f}%)",
-        ),
-        (
-            r"- \*\*Manual\*\*: [\d,]+ workflows \([\d.]+%\)",
-            f"- **Manual**: {stats['triggers'].get('Manual', 0):,} workflows ({(stats['triggers'].get('Manual', 0) / stats['total_workflows'] * 100):.1f}%)",
-        ),
-        (
-            r"- \*\*Scheduled\*\*: [\d,]+ workflows \([\d.]+%\)",
-            f"- **Scheduled**: {stats['triggers'].get('Scheduled', 0):,} workflows ({(stats['triggers'].get('Scheduled', 0) / stats['total_workflows'] * 100):.1f}%)",
-        ),
-        # Update total in current collection stats
-        (
-            r"\*\*Total Workflows\*\*: [\d,]+ automation",
-            f"**Total Workflows**: {stats['total_workflows']:,} automation",
-        ),
-        (
-            r"\*\*Active Workflows\*\*: [\d,]+ \([\d.]+% active",
-            f"**Active Workflows**: {stats['active_workflows']:,} ({(stats['active_workflows'] / stats['total_workflows'] * 100):.1f}% active",
-        ),
-        (
-            r"\*\*Total Nodes\*\*: [\d,]+ \(avg [\d.]+ nodes",
-            f"**Total Nodes**: {stats['total_nodes']:,} (avg {(stats['total_nodes'] / stats['total_workflows']):.1f} nodes",
-        ),
-        (
-            r"\*\*Unique Integrations\*\*: [\d,]+ different",
-            f"**Unique Integrations**: {stats['unique_integrations']:,} different",
-        ),
-        # Categories count
-        (
-            r"Our system automatically categorizes workflows into [\d]+ service categories",
-            f"Our system automatically categorizes workflows into {stats['categories_count']} service categories",
-        ),
-        # Update any "2000+" references
-        (r"2000\+", f"{stats['total_workflows']:,}+"),
-        (r"2,000\+", f"{stats['total_workflows']:,}+"),
-        # Search across X workflows
-        (
-            r"Search across [\d,]+ workflows",
-            f"Search across {stats['total_workflows']:,} workflows",
-        ),
-        # Instant search across X workflows
-        (
-            r"Instant search across [\d,]+ workflows",
-            f"Instant search across {stats['total_workflows']:,} workflows",
+            r"├── workflows/\s+#\s+[\d,]+\s+workflow JSON files",
+            f"├── workflows/           # {stats['total_workflows']:,} workflow JSON files",
         ),
     ]
 

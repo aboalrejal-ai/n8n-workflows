@@ -4,42 +4,36 @@
 
 If you discover a security vulnerability in this project, please report it responsibly by emailing the maintainers directly. Do not create public issues for security vulnerabilities.
 
-## Security Fixes Applied (November 2025)
+## Security Fixes & Cleanups (May 2026)
 
-### 1. Path Traversal Vulnerability (Fixed)
+### 1. Hardcoded Credentials Cleanup (Fixed May 2026)
+- **Issue**: Staged template files contained raw hardcoded secrets (including a Perplexity API Key and an Apify API Token) which triggered GitHub Push Protection blocks and risked exposing live keys in public source code.
+- **Fix Applied**: Stripped all active credentials from JSON templates (`1756_Code_HTTP_Automation_Webhook.json` and `1964_HTTP_Aggregate_Automation_Webhook.json`) and replaced them with secure placeholders (`YOUR_PERPLEXITY_API_KEY_HERE` and `YOUR_APIFY_API_TOKEN_HERE`), allowing secure deployment.
+
+### 2. Path Traversal Vulnerability (Fixed November 2025)
 **Issue #48**: Previously, the API server was vulnerable to path traversal attacks on Windows systems.
 
 **Fix Applied**:
 - Added comprehensive filename validation with `validate_filename()` function
-- Blocks all path traversal patterns including:
-  - Parent directory references (`..`, `../`, `..\\`)
-  - URL-encoded traversal attempts (`..%5c`, `..%2f`)
-  - Absolute paths and drive letters
-  - Shell special characters and wildcards
+- Blocks all path traversal patterns including parent directory references (`..`), drive letters, and special characters
 - Uses `Path.resolve()` and `relative_to()` for defense in depth
-- Applied to all file-access endpoints:
-  - `/api/workflows/{filename}`
-  - `/api/workflows/{filename}/download`
-  - `/api/workflows/{filename}/diagram`
 
-### 2. CORS Misconfiguration (Fixed)
-**Previously**: CORS was configured with `allow_origins=["*"]`, allowing any website to access the API.
+### 3. CORS Misconfiguration (Fixed & Reconfigured May 2026)
+**Previously**: CORS allowed arbitrary origins or pointed to the old repository domain.
 
 **Fix Applied**:
 - Restricted CORS origins to specific allowed domains:
   - Local development ports (3000, 8000, 8080)
-  - GitHub Pages (`https://zie619.github.io`)
-  - Community deployment (`https://n8n-workflows-1-xxgm.onrender.com`)
+  - GitHub Pages (`https://aboalrejal-ai.github.io`)
 - Restricted allowed methods to only `GET` and `POST`
 - Restricted allowed headers to `Content-Type` and `Authorization`
 
-### 3. Unauthenticated Reindex Endpoint (Fixed)
+### 4. Unauthenticated Reindex Endpoint (Fixed November 2025)
 **Previously**: The `/api/reindex` endpoint could be called by anyone, potentially causing DoS.
 
 **Fix Applied**:
 - Added authentication requirement via `admin_token` query parameter
 - Token must match `ADMIN_TOKEN` environment variable
-- If no token is configured, the endpoint is disabled
 - Added rate limiting to prevent abuse
 - Logs all reindex attempts with client IP
 
@@ -103,13 +97,15 @@ add_header Content-Security-Policy "default-src 'self'";
 add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
 ```
 
-## Vulnerability Disclosure Timeline
+## Vulnerability & Security Disclosure Timeline
 
 | Date | Issue | Status | Fixed Version |
 |------|-------|--------|---------------|
 | Oct 2025 | Path Traversal (#48) | Fixed | 2.0.1 |
 | Nov 2025 | CORS Misconfiguration | Fixed | 2.0.1 |
 | Nov 2025 | Unauthenticated Reindex | Fixed | 2.0.1 |
+| May 2026 | Hardcoded Secrets in JSON templates | Cleaned & Replaced | 2.0.2 |
+| May 2026 | CORS Domain update (`aboalrejal-ai`) | Reconfigured | 2.0.2 |
 
 ## Credits
 

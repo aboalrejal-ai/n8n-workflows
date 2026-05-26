@@ -221,11 +221,3 @@ When assisting with this repository:
 - Last updated: [Date of last major update]
 
 - Migration notes: [Any version-specific considerations]
-
--
-
--
-
--
-
-[中文](./CLAUDE_ZH.md)

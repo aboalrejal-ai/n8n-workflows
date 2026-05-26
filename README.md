@@ -3,8 +3,8 @@
 <div align="center">
 
 ![n8n Workflows](https://img.shields.io/badge/n8n-Workflows-orange?style=for-the-badge&logo=n8n)
-![Workflows](https://img.shields.io/badge/Workflows-4343+-blue?style=for-the-badge)
-![Integrations](https://img.shields.io/badge/Integrations-365+-green?style=for-the-badge)
+![Workflows](https://img.shields.io/badge/Workflows-6435+-blue?style=for-the-badge)
+![Integrations](https://img.shields.io/badge/Integrations-397+-green?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)
 
 ### The Ultimate Collection of n8n Automation Workflows
@@ -44,9 +44,9 @@ Visit **[aboalrejal-ai.github.io/n8n-workflows](https://aboalrejal-ai.github.io/
 <td width="50%">
 
 ### By The Numbers
-- **4,343** Production-Ready Workflows
-- **365** Unique Integrations
-- **29,445** Total Nodes
+- **6,435** Production-Ready Workflows
+- **397** Unique Integrations
+- **54,520** Total Nodes
 - **15** Organized Categories
 - **100%** Import Success Rate
 
@@ -148,7 +148,7 @@ graph LR
 
 ```
 n8n-workflows/
-├── workflows/           # 4,343 workflow JSON files
+├── workflows/           # 6,435 workflow JSON files
 │   └── [category]/     # Organized by integration
 ├── docs/               # GitHub Pages site
 ├── src/                # Python source code
