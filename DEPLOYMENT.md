@@ -1,101 +1,130 @@
-# N8N Workflows Documentation Platform - Deployment Guide
+# n8n Workflows Platform: Production & Self-Hosted Deployment Guide
 
-This guide covers deploying the N8N Workflows Documentation Platform in various environments.
+This operations guide provides professional instructions for installing, configuring, deploying, and maintaining the **n8n Workflows Search Platform** across multiple environments. Whether you are running a lightweight container on a local machine, setting up a secure production environment with Traefik and Gunicorn, or deploying to a highly scalable Kubernetes cluster, this document outlines every step with production-ready best practices.
 
-## Quick Start (Docker)
+---
 
-### Development Environment
+## ⚡ Quick-Start (Docker Compose)
+
+The easiest way to get the searchable workflow catalog up and running is via Docker Compose. We provide pre-configured composition layers for both development (hot-reload enabled) and production (hardened with resource constraints).
+
+### Development Environment Setup
+To build the image locally and start the server with live reloading, run:
 ```bash
-# Clone repository
-git clone <repository-url>
-cd n8n-workflows-1
+# Clone the repository
+git clone https://github.com/aboalrejal-ai/n8n-workflows.git
+cd n8n-workflows
 
-# Start development environment
+# Launch development environment (enables automatic server reload)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-### Production Environment
+### Production Deployment Setup
+For standard production deployments, use the optimized configurations and run the containers in detached daemon mode:
 ```bash
-# Production deployment
+# Launch a hardened production environment
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
-# With monitoring
+# Optional: Spin up the stack with full monitoring profiles (Prometheus/Grafana)
 docker compose --profile monitoring up -d
 ```
 
-## Deployment Options
+---
 
-### 1. Docker Compose (Recommended)
+## 🚀 Granular Deployment Options
 
-#### Development
+We support several infrastructure stacks to suit your team's deployment architecture:
+
+### 1. Docker Compose (Recommended Setup)
+
+Our Docker Compose structure is modular, allowing you to combine configuration files using the `-f` flag to activate profiles as needed.
+
+#### Local Development Mode
+Includes local volumes mapping, verbose debugging logs, and automatic file monitoring to reload FastAPI:
 ```bash
-# Start development environment with auto-reload
+# Start development server
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-# With additional dev tools (DB admin, file watcher)
+# Spin up development tools profile (e.g., SQLite DB manager, file watchers)
 docker compose --profile dev-tools up
 ```
 
-#### Production
+#### Production-Hardened Mode
+Restricts process privileges, implements health-checks, binds correct ports, and configures database isolation:
 ```bash
-# Basic production deployment
+# Run basic production instance in the background
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
-# With reverse proxy and SSL
+# Deploy production with a secure reverse proxy and SSL configuration
 docker compose --profile production up -d
 
-# With monitoring stack
+# Enable the monitoring stack to collect service metrics
 docker compose --profile monitoring up -d
 ```
 
-### 2. Standalone Docker
+---
+
+### 2. Standalone Docker Container
+
+If you prefer to manage the lifecycle of a single container directly via the Docker CLI, build and run the image with these commands:
 
 ```bash
-# Build image
+# Compile the Docker image locally
 docker build -t workflows-doc:latest .
 
-# Run container
+# Launch the container with isolated database volume and logging
 docker run -d \
   --name n8n-workflows-docs \
   -p 8000:8000 \
   -v $(pwd)/database:/app/database \
   -v $(pwd)/logs:/app/logs \
   -e ENVIRONMENT=production \
+  --restart unless-stopped \
   workflows-doc:latest
 ```
 
-### 3. Python Direct Deployment
+---
+
+### 3. Native Python Host Deployment
+
+If you are running the application directly on a virtual machine (e.g., Ubuntu, Debian, Windows) without containerization:
 
 #### Prerequisites
-- Python 3.11+
-- pip
+*   Python 3.11 or higher
+*   Python Package Manager (`pip`)
 
-#### Installation
+#### Step-by-Step Installation
 ```bash
-# Install dependencies
+# Install required backend dependencies
 pip install -r requirements.txt
 
-# Development mode
+# Option A: Run in development mode (hot-reload and interactive debug logs)
 python run.py --dev
 
-# Production mode
+# Option B: Run in standard host production mode
 python run.py --host 0.0.0.0 --port 8000
 ```
 
-#### Production with Gunicorn
+#### Enterprise Production Server (Gunicorn & Uvicorn Workers)
+For production workloads, wrap the FastAPI application in a robust WSGI server using Gunicorn with ASGI Uvicorn workers:
 ```bash
-# Install gunicorn
-pip install gunicorn
+# Ensure Gunicorn and Uvicorn are installed
+pip install gunicorn uvicorn
 
-# Start with gunicorn
+# Start the enterprise server (scales across 4 worker processes)
 gunicorn -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 api_server:app
 ```
 
-### 4. Kubernetes Deployment
+---
 
-#### Basic Deployment
+### 4. Kubernetes Cluster Deployment
+
+For cloud-native orchestrations, we provide raw Kubernetes manifests and a custom Helm Chart.
+
+#### Deploying Raw Manifests
+Apply the configuration and deployment manifests to your cluster step-by-step:
 ```bash
-# Apply Kubernetes manifests
+# Deploy namespaces, config maps, application logic, and ingress routing
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/deployment.yaml
@@ -103,52 +132,64 @@ kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/ingress.yaml
 ```
 
-#### Helm Chart
+#### Deployment via Helm Chart
+If you use Helm to manage your application package releases:
 ```bash
-# Install with Helm
+# Install the workflows documentation release from the local Helm directory
 helm install n8n-workflows-docs ./helm/workflows-docs
 ```
 
-## Environment Configuration
+---
 
-### Environment Variables
+## ⚙️ Environment Configuration
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `ENVIRONMENT` | Deployment environment | `development` | No |
-| `LOG_LEVEL` | Logging level | `info` | No |
-| `HOST` | Bind host | `127.0.0.1` | No |
-| `PORT` | Bind port | `8000` | No |
-| `DATABASE_PATH` | SQLite database path | `database/workflows.db` | No |
-| `WORKFLOWS_PATH` | Workflows directory | `workflows` | No |
-| `ENABLE_METRICS` | Enable Prometheus metrics | `false` | No |
-| `MAX_WORKERS` | Max worker processes | `1` | No |
-| `DEBUG` | Enable debug mode | `false` | No |
-| `RELOAD` | Enable auto-reload | `false` | No |
+The application is highly customizable via standard environment variables. You can pass these via Docker files, Kubernetes configurations, or a local `.env` file.
 
-### Configuration Files
+### Complete Environment Variables Reference
 
-Create environment-specific configuration:
+| Environment Variable | Description | Default Value | Required |
+|:---|:---|:---:|:---:|
+| `ENVIRONMENT` | Specifies running environment (`development` or `production`). | `development` | No |
+| `LOG_LEVEL` | Verbosity level for system logs (`debug`, `info`, `warning`, `error`). | `info` | No |
+| `HOST` | The network interface the host server binds to. | `127.0.0.1` | No |
+| `PORT` | The port the FastAPI web server listens on. | `8000` | No |
+| `DATABASE_PATH` | Relative or absolute path to the SQLite search database. | `database/workflows.db` | No |
+| `WORKFLOWS_PATH` | Location of the workflow JSON templates catalog. | `workflows` | No |
+| `ENABLE_METRICS` | Enables Prometheus scrape endpoints (`true` or `false`). | `false` | No |
+| `MAX_WORKERS` | Max worker concurrent processes spawned by the server. | `1` | No |
+| `DEBUG` | Enables developer mode and detailed error stack traces. | `false` | No |
+| `RELOAD` | Activates automatic application restarts when code changes. | `false` | No |
 
-#### `.env` (Development)
-```bash
+---
+
+### Configuration File Patterns
+
+Create environment-specific files in your root workspace:
+
+#### Local Development Settings (`.env`)
+```ini
 ENVIRONMENT=development
 LOG_LEVEL=debug
 DEBUG=true
 RELOAD=true
 ```
 
-#### `.env.production` (Production)
-```bash
+#### Production Platform Settings (`.env.production`)
+```ini
 ENVIRONMENT=production
 LOG_LEVEL=warning
 ENABLE_METRICS=true
 MAX_WORKERS=4
 ```
 
-## Security Configuration
+---
 
-### 1. Reverse Proxy Setup (Traefik)
+## 🛡️ Production Security Hardening
+
+To run this platform securely in a production environment, implement these reverse proxy and SSL layers:
+
+### 1. Reverse Proxy Middleware (Traefik Example)
+Filter and protect incoming traffic using Traefik dynamic middleware rules:
 
 ```yaml
 # traefik/config/dynamic.yml
@@ -157,7 +198,7 @@ http:
     auth:
       basicAuth:
         users:
-          - "admin:$2y$10$..."  # Generate with htpasswd
+          - "admin:$2y$10$tZ2R4..."  # Generate secure passwords using htpasswd tool
     security-headers:
       headers:
         customRequestHeaders:
@@ -165,125 +206,142 @@ http:
         customResponseHeaders:
           X-Frame-Options: "DENY"
           X-Content-Type-Options: "nosniff"
+          X-XSS-Protection: "1; mode=block"
+          Content-Security-Policy: "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;"
         sslRedirect: true
 ```
 
-### 2. SSL/TLS Configuration
+### 2. Automated SSL/TLS Configuration
+Configure Let's Encrypt directly in your Docker Compose or proxy layer to ensure secure, HTTPS-only traffic:
 
-#### Let's Encrypt (Automatic)
 ```yaml
-# In docker-compose.prod.yml
+# Inside docker-compose.prod.yml under Traefik command settings
 command:
   - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
-  - "--certificatesresolvers.myresolver.acme.email=admin@yourdomain.com"
+  - "--certificatesresolvers.myresolver.acme.email=secops@yourdomain.com"
 ```
 
-#### Custom SSL Certificate
+#### Using Custom SSL/TLS Certificates
+If you are deploying on-premise with pre-purchased or corporate certificates:
 ```yaml
 volumes:
-  - ./ssl:/ssl:ro
+  - ./ssl/certs:/ssl:ro
 ```
 
-### 3. Basic Authentication
+### 3. Restricting Admin Endpoints via Basic Auth
+Secure sensitive backend endpoints (like `/api/reindex`) using htpasswd:
 
 ```bash
-# Generate htpasswd entry
-htpasswd -nb admin yourpassword
+# Generate htpasswd hash
+htpasswd -nb admin yoursecurepassword
 
-# Add to Traefik labels
+# Map generated password inside Traefik container labels
 - "traefik.http.middlewares.auth.basicauth.users=admin:$$2y$$10$$..."
 ```
 
-## Performance Optimization
+---
 
-### 1. Resource Limits
+## ⚡ Performance Tuning
+
+Optimize server operations to maximize throughput and achieve sub-100ms response times:
+
+### 1. Enforcing System Resource Limits
+Bound the system footprint to prevent OOM errors in shared or low-cost virtual private servers:
 
 ```yaml
-# docker-compose.prod.yml
+# Inside docker-compose.prod.yml deployment block
 deploy:
   resources:
     limits:
       memory: 512M
-      cpus: '0.5'
+      cpus: '0.50'
     reservations:
       memory: 256M
       cpus: '0.25'
 ```
 
-### 2. Database Optimization
+### 2. Search Database Indexes & Optimization
+Rebuild full-text search index structures to keep search performance optimal after importing new workflows:
 
 ```bash
-# Force reindex for better performance
+# Force a database reindex via CLI
 python run.py --reindex
 
-# Or via API
-curl -X POST http://localhost:8000/api/reindex
+# Alternatively, trigger reindexing via the authenticated admin REST API
+curl -X POST http://localhost:8000/api/reindex?admin_token=YOUR_SECURE_ADMIN_TOKEN
 ```
 
-### 3. Caching Headers
+### 3. Client Caching Headers (Static Assets Optimization)
+Accelerate UI load speeds by caching static scripts, styles, and workflow assets on client browsers:
 
 ```yaml
-# Traefik middleware for static files
+# Traefik headers configuration
 http:
   middlewares:
     cache-headers:
       headers:
         customResponseHeaders:
-          Cache-Control: "public, max-age=31536000"
+          Cache-Control: "public, max-age=31536000, immutable"
 ```
 
-## Monitoring & Logging
+---
 
-### 1. Health Checks
+## 📈 Monitoring & Logging Services
+
+Ensure high availability by hooking up metrics collectors and system logs.
+
+### 1. Container & API Health Checking
+Establish standard health checks inside your Docker and Kubernetes orchestrations:
 
 ```bash
-# Docker health check
+# Docker health check validation command
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/stats || exit 1
 
-# Manual health check
+# Manual health validation via curl
 curl http://localhost:8000/api/stats
 ```
 
-### 2. Logs
+### 2. Log Inspections & Troubleshooting
+Analyze logs to audit incoming API requests and verify error-free execution:
 
 ```bash
-# View application logs
+# Stream live logs from Docker Compose services
 docker compose logs -f workflows-docs
 
-# View specific service logs
-docker logs n8n-workflows-docs
-
-# Log location in container
-/app/logs/app.log
+# Audit log file location mapped inside container
+tail -f /app/logs/app.log
 ```
 
-### 3. Metrics (Prometheus)
-
+### 3. Monitoring with Prometheus & Grafana
+Collect execution speeds and request volumes:
 ```bash
-# Start monitoring stack
+# Spin up Prometheus monitoring service profile
 docker compose --profile monitoring up -d
 
-# Access Prometheus
-http://localhost:9090
+# Open the local Prometheus metrics interface
+# Access: http://localhost:9090
 ```
 
-## Backup & Recovery
+---
 
-### 1. Database Backup
+## 💾 Backup & Disaster Recovery
 
+Set up structured copy operations to protect your search index and workflow catalogs.
+
+### 1. Database Hot-Backup (SQLite)
+Safely copy the SQLite database without interrupting active read streams:
 ```bash
-# Backup SQLite database
+# Standard backup creation command
 cp database/workflows.db database/workflows.db.backup
 
-# Or using docker
+# Containerized hot-backup execution
 docker exec n8n-workflows-docs cp /app/database/workflows.db /app/database/workflows.db.backup
 ```
 
-### 2. Configuration Backup
-
+### 2. Creating Complete Configuration Backups
+Archive database volumes, environment configurations, and static parameters into a secure tarball:
 ```bash
-# Backup entire configuration
 tar -czf n8n-workflows-backup-$(date +%Y%m%d).tar.gz \
   database/ \
   logs/ \
@@ -291,150 +349,99 @@ tar -czf n8n-workflows-backup-$(date +%Y%m%d).tar.gz \
   .env*
 ```
 
-### 3. Restore
-
+### 3. Disaster Recovery Sequence
+Restore service operations swiftly in the event of an infrastructure crash:
 ```bash
-# Stop services
+# Shut down active container operations
 docker compose down
 
-# Restore database
+# Overwrite corrupted database files with verified backups
 cp database/workflows.db.backup database/workflows.db
 
-# Start services
+# Relaunch the containerized application
 docker compose up -d
 ```
 
-## Scaling & Load Balancing
+---
 
-### 1. Multiple Instances
+## ⚖️ Scaling & Zero-Downtime Updates
 
-```yaml
-# docker-compose.scale.yml
-services:
-  workflows-docs:
-    deploy:
-      replicas: 3
-```
+Manage traffic spikes and apply software updates with zero user disruption.
 
+### 1. Horizontal Instance Scaling
+Scale the application server across multiple containers:
 ```bash
-# Scale up
-docker compose up --scale workflows-docs=3
+# Scale the fastapi backend instances dynamically to 3 containers
+docker compose up --scale workflows-docs=3 -d
 ```
 
-### 2. Load Balancer Configuration
-
+### 2. Load Balancer Sticky Sessions
+Ensure smooth user navigation by configuring Traefik session stickiness:
 ```yaml
-# Traefik load balancing
 labels:
   - "traefik.http.services.workflows-docs.loadbalancer.server.port=8000"
   - "traefik.http.services.workflows-docs.loadbalancer.sticky=true"
+  - "traefik.http.services.workflows-docs.loadbalancer.sticky.cookie.name=n8n_workflows_cookie"
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Database locked error**
-   ```bash
-   # Check file permissions
-   ls -la database/
-   
-   # Fix permissions
-   chmod 664 database/workflows.db
-   ```
-
-2. **Port already in use**
-   ```bash
-   # Check what's using the port
-   lsof -i :8000
-   
-   # Use different port
-   docker compose up -d -p 8001:8000
-   ```
-
-3. **Out of memory**
-   ```bash
-   # Check memory usage
-   docker stats
-   
-   # Increase memory limit
-   # Edit docker-compose.prod.yml resources
-   ```
-
-### Logs & Debugging
-
+### 3. Blue-Green Zero-Downtime Deployment
+Deploy code updates without dropping a single request:
 ```bash
-# Application logs
-docker compose logs -f workflows-docs
-
-# System logs
-docker exec workflows-docs tail -f /app/logs/app.log
-
-# Database logs
-docker exec workflows-docs sqlite3 /app/database/workflows.db ".tables"
-```
-
-## Migration & Updates
-
-### 1. Update Application
-
-```bash
-# Pull latest changes
-git pull origin main
-
-# Rebuild and restart
-docker compose down
-docker compose up -d --build
-```
-
-### 2. Database Migration
-
-```bash
-# Backup current database
-cp database/workflows.db database/workflows.db.backup
-
-# Force reindex with new schema
-python run.py --reindex
-```
-
-### 3. Zero-downtime Updates
-
-```bash
-# Blue-green deployment
+# 1. Build and run the fresh application container in green environment namespace
 docker compose -p n8n-workflows-green up -d --build
 
-# Switch traffic (update load balancer)
-# Verify new deployment
-# Shut down old deployment
+# 2. Perform automated tests on green cluster to verify health status
+# 3. Seamlessly point your load balancer / proxy configuration to the green target
+# 4. Gracefully terminate and tear down the legacy blue environment namespace
 docker compose -p n8n-workflows-blue down
 ```
 
-## Security Checklist
+---
 
-- [ ] Use non-root user in Docker container
-- [ ] Enable HTTPS/SSL in production
-- [ ] Configure proper firewall rules
-- [ ] Use strong authentication credentials
-- [ ] Regular security updates
-- [ ] Enable access logs and monitoring
-- [ ] Backup sensitive data securely
-- [ ] Review and audit configurations regularly
+## 🛠️ Common Operations Troubleshooting
 
-## Support & Maintenance
+Solve runtime issues quickly with these verified procedures:
 
-### Regular Tasks
+### 1. SQLite Database Lock Errors (`database is locked`)
+*   **Root Cause**: Multiple write tasks attempting to access SQLite concurrently.
+*   **Resolution**: Verify and fix write permissions on the directory:
+    ```bash
+    # Inspect directory ownership
+    ls -la database/
+    
+    # Apply read-write permissions to container user
+    chmod 664 database/workflows.db
+    ```
 
-1. **Daily**
-   - Monitor application health
-   - Check error logs
-   - Verify backup completion
+### 2. Bounding Network Port Conflicts (`port already in use`)
+*   **Root Cause**: Local processes or other Docker instances binding to port 8000.
+*   **Resolution**: Identify and stop conflicting processes:
+    ```bash
+    # Inspect processes binding to port 8000
+    lsof -i :8000
+    
+    # Or start our container using an alternative host port mapping
+    docker compose up -d -p 8080:8000
+    ```
 
-2. **Weekly**
-   - Review performance metrics
-   - Update dependencies if needed
-   - Test disaster recovery procedures
+### 3. Container Out-Of-Memory (OOM) Termination
+*   **Root Cause**: Memory limit constraints breached under concurrent search scans.
+*   **Resolution**: Monitor stats and expand limits in your production config:
+    ```bash
+    # View live container resource usage stats
+    docker stats
+    
+    # Edit docker-compose.prod.yml deploy limits to allow higher memory (e.g. 512MB to 1GB)
+    ```
 
-3. **Monthly**
-   - Security audit
-   - Database optimization
-   - Update documentation
+---
+
+## 📋 Security Operations Checklist
+Ensure these security practices are fully met before making your platform public:
+*   [ ] Generate and set a highly complex `ADMIN_TOKEN` value.
+*   [ ] Harden CORS settings by permitting only your production domain names.
+*   [ ] Force automatic SSL redirects to secure HTTPS connections.
+*   [ ] Configure basic auth parameters or firewall blocks on administrative URLs.
+*   [ ] Enforce container process boundaries to run under a non-root user.
+*   [ ] Implement regular crontab backups for both database and log assets.
+*   [ ] Schedule weekly scans for security advisories and update package dependencies.

@@ -1,223 +1,110 @@
+# CLAUDE.md: AI Assistant Context & Developer Guidelines
 
+This document serves as the primary system context and operational guideline for AI coding assistants (such as Claude, Gemini, or GitHub Copilot) and developers collaborating on the **n8n-workflows** repository. It defines coding standards, repository structure, workflow formats, and best practices to ensure consistency across all AI-driven analysis, documentation, and database operations.
 
-# n8n-workflows Repository
+---
 
-#
+## 📁 Repository Architecture & Layout
 
-# Overview
-This repository contains a collection of n8n workflow automation files. n8n is a workflow automation tool that allows creating complex automations through a visual node-based interface. Each workflow is stored as a JSON file containing node definitions, connections, and configurations.
-
-#
-
-# Repository Structure
 ```text
-
-text
-
-text
 n8n-workflows/
-├── workflows/           
+├── workflows/              # The core database of 6,400+ workflows
+│   ├── [Category]/        # Organized by primary application or integration
+│   │   └── *.json         # Single, clean workflow JSON definitions
+├── docs/                   # Search catalog web asset directory (GitHub Pages site)
+├── src/                    # FastAPI backend Python source files
+├── scripts/                # Database maintenance and automation scripts
+├── api_server.py           # FastAPI REST API controller
+├── workflow_db.py          # SQLite schema, indices, and reindex scripts
+├── run.py                  # Entrypoint server launcher
+├── SECURITY.md             # Security policy and historic patch logs
+├── CONTRIBUTING.md         # Open-source contributing standards
+└── CLAUDE.md               # This system context file
+```
 
-# Main directory containing all n8n workflow JSON files
-│   ├── *.json          
+---
 
-# Individual workflow files
-├── README.md           
+## 📋 JSON Workflow Schema & Structural Standards
 
-# Repository documentation
-├── claude.md           
+Every workflow template stored in the `/workflows/` directory is represented as an isolated JSON file. When parsing or modifying these files, adhere to the standard n8n JSON schema:
 
-# This file
+*   **`name`**: The user-facing descriptive title of the workflow.
+*   **`nodes`**: A flat array of node objects defining visual nodes, parameters, and positions on the canvas.
+*   **`connections`**: An object mapping input/output relationships and data flows between nodes.
+*   **`settings`**: Workflow-level parameters (e.g., error handling pathways, execution triggers, data pruning rules).
+*   **`staticData`**: Persistent parameter values stored across multiple workflow executions.
+*   **`tags`**: A string array used to classify, index, and organize templates in the database.
+*   **`createdAt` / `updatedAt`**: Standard timestamps recording file generation.
 
- - AI assistant context
-└── [other files]       
+---
 
-# Additional configuration or documentation files
-```text
+## 🧩 Primary Node Classification Guide
 
-text
+When analyzing or documenting workflows, categorize nodes into these five primary groupings:
+1.  **Trigger Nodes**: Active entrypoints that initiate execution (e.g., `n8n-nodes-base.webhook`, `n8n-nodes-base.cron`, `n8n-nodes-base.manualTrigger`).
+2.  **Integration Nodes**: Connectors interacting with external APIs, cloud systems, or database engines (e.g., `n8n-nodes-base.httpRequest`, PostgreSQL, Slack, HubSpot, Salesforce).
+3.  **Logical Routing Nodes**: Flow controllers defining conditional execution paths (e.g., `n8n-nodes-base.if`, `n8n-nodes-base.switch`, `n8n-nodes-base.merge`, `n8n-nodes-base.splitInBatches`).
+4.  **Data Operations Nodes**: Data processors that parse, transform, and clean payload arrays (e.g., `n8n-nodes-base.code`, `n8n-nodes-base.set`, `n8n-nodes-base.html`).
+5.  **Communications Nodes**: Notifiers that send updates, messages, or reports (e.g., `n8n-nodes-base.emailSend`, Discord, Telegram).
 
-text
+---
 
-#
+## 🤖 Directives for AI Assistant Tasks
 
-# Workflow File Format
-Each workflow JSON file contains:
+Coding assistants must execute commands according to these three task-specific protocols:
 
-- **name**: Workflow identifier
+### A. Workflow Analysis Tasks
+*   **Business Intent Focus**: Evaluate the overall business value and objective of the node chain rather than just listing individual nodes.
+*   **Security Auditing**: Scan nested node parameters for sensitive hardcoded tokens, webhooks, private email addresses, or unencrypted passwords.
+*   **Integration Mappings**: Compile a structured list of all third-party services and APIs utilized within the template.
 
-- **nodes**: Array of node objects defining operations
+### B. Documentation Generation Tasks
+*   **Verify Declarations**: Cross-reference existing documentation with the actual JSON structure to catch outdated instructions.
+*   **Detail Triggers**: Explicitly document how the workflow starts (e.g., webhook payload structures, specific cron timetables, or manual clicks).
+*   **Trace Transformations**: Explain how data is manipulated or mapped across nodes (especially custom JavaScript/TypeScript code blocks).
+*   **Outline Error Resilience**: Highlight any custom error-handling nodes, fallback paths, or auto-retry settings implemented on the canvas.
 
-- **connections**: Object defining how nodes are connected
+### C. Workflow Modification Tasks
+*   **Schema Consistency**: Preserve all mandatory JSON objects and data structures. Never omit coordinates or connection parameters.
+*   **Enforce Unique IDs**: When inserting, duplicating, or refactoring nodes on the canvas, ensure every node contains a globally unique ID string.
+*   **Validate Connections**: Recalculate and update the `connections` dictionary to avoid broken execution paths after adding or removing nodes.
+*   **Compatibility Checks**: Ensure modifications remain compatible with common n8n versions. Avoid utilizing legacy parameters.
 
-- **settings**: Workflow-level configuration
+---
 
-- **staticData**: Persistent data across executions
+## 💡 Engineering Best Practices & Guidelines
 
-- **tags**: Categorization tags
+Keep these principles in mind when contributing workflow assets to the repository:
 
-- **createdAt/updatedAt**: Timestamps
+*   **Descriptive Naming**: Give nodes unique, explanatory labels on the canvas that describe their exact role.
+*   **Visual Sticky Notes**: Place informative visual comments (Sticky Notes) near complex logical forks or custom JS/TS nodes to simplify user onboarding.
+*   **Implement Error Fallbacks**: Encourage the use of `OnError` node settings to gracefully handle external API rate limits or downtime.
+*   **Modular Architecture**: Build complex logic paths across multiple sub-workflows using `Execute Workflow` nodes to keep templates readable.
 
-#
+---
 
-# Common Node Types
+## 🔄 Common Automation Patterns
 
-- **Trigger Nodes**: webhook, cron, manual
+Our workflow catalog primarily focuses on these four high-value architectural patterns:
+*   **Automated Data Pipelines**: `Trigger Node` → `Fetch Payload` → `Transform Array` → `Store/Sync to DB`.
+*   **Inter-System Synchronization**: `Cron Trigger` → `Query Source API` → `Diff Data Arrays` → `Patch Target API`.
+*   **Transactional Automations**: `Webhook Trigger` → `Parse Payload` → `Conditional Route` → `Execute Business Action`.
+*   **System Infrastructure Monitoring**: `Schedule Trigger` → `Send HTTP Health Check` → `Evaluate Status` → `Send Alerts on Failure`.
 
-- **Integration Nodes**: HTTP Request, database connectors, API integrations
+---
 
-- **Logic Nodes**: IF, Switch, Merge, Loop
+## 🛠️ Specialized AI Troubleshooting Guidelines
 
-- **Data Nodes**: Function, Set, Transform Data
+When diagnosing issues or generating utility scripts for our workflows, apply these checks:
+1.  **Invalid Connections**: Catch instances where a node references a source or target node name that does not exist in the `nodes` array.
+2.  **Missing Error Policies**: Flag mission-critical nodes (like HTTP integrations) that lack retry policies or error catching.
+3.  **Array Loop Exhaustion**: Check custom JavaScript/TypeScript loops to ensure nodes processing batches do not cause memory leaks or infinite loop states.
+4.  **Static Parameter Exposure**: Identify hardcoded authorization tokens or keys that should be parameterized using environment variables or n8n credentials.
 
-- **Communication**: Email, Slack, Discord, etc.
+---
 
-#
+## ⚙️ Repository Context & Versioning
 
-# Working with This Repository
-
-#
-
-#
-
-# For Analysis Tasks
-When analyzing workflows in this repository:
-
-1. Parse JSON files to understand workflow structure
-
-2. Examine node chains to determine functionality
-
-3. Identify external integrations and dependencies
-
-4. Consider the business logic implemented by node connections
-
-#
-
-#
-
-# For Documentation Tasks
-When documenting workflows:
-
-1. Verify existing descriptions against actual implementation
-
-2. Identify trigger mechanisms and schedules
-
-3. List all external services and APIs used
-
-4. Note data transformations and business logic
-
-5. Highlight any error handling or retry mechanisms
-
-#
-
-#
-
-# For Modification Tasks
-When modifying workflows:
-
-1. Preserve the JSON structure and required fields
-
-2. Maintain node ID uniqueness
-
-3. Update connections when adding/removing nodes
-
-4. Test compatibility with n8n version requirements
-
-#
-
-# Key Considerations
-
-#
-
-#
-
-# Security
-
-- Workflow files may contain sensitive information in webhook URLs or API configurations
-
-- Credentials are typically stored separately in n8n, not in the workflow files
-
-- Be cautious with any hardcoded values or endpoints
-
-#
-
-#
-
-# Best Practices
-
-- Workflows should have clear, descriptive names
-
-- Complex workflows benefit from documentation nodes or comments
-
-- Error handling nodes improve reliability
-
-- Modular workflows (calling sub-workflows) improve maintainability
-
-#
-
-#
-
-# Common Patterns
-
-- **Data Pipeline**: Trigger → Fetch Data → Transform → Store/Send
-
-- **Integration Sync**: Cron → API Call → Compare → Update Systems
-
-- **Automation**: Webhook → Process → Conditional Logic → Actions
-
-- **Monitoring**: Schedule → Check Status → Alert if Issues
-
-#
-
-# Helpful Context for AI Assistants
-
-When assisting with this repository:
-
-1. **Workflow Analysis**: Focus on understanding the business purpose by examining the node flow, not just individual nodes.
-
-2. **Documentation Generation**: Create descriptions that explain what the workflow accomplishes, not just what nodes it contains.
-
-3. **Troubleshooting**: Common issues include:
-
-   - Incorrect node connections
-
-   - Missing error handling
-
-   - Inefficient data processing in loops
-
-   - Hardcoded values that should be parameters
-
-4. **Optimization Suggestions**:
-
-   - Identify redundant operations
-
-   - Suggest batch processing where applicable
-
-   - Recommend error handling additions
-
-   - Propose splitting complex workflows
-
-5. **Code Generation**: When creating tools to analyze these workflows:
-
-   - Handle various n8n format versions
-
-   - Account for custom nodes
-
-   - Parse expressions in node parameters
-
-   - Consider node execution order
-
-#
-
-# Repository-Specific Information
-[Add any specific information about your workflows, naming conventions, or special considerations here]
-
-#
-
-# Version Compatibility
-
-- n8n version: [Specify the n8n version these workflows are compatible with]
-
-- Last updated: [Date of last major update]
-
-- Migration notes: [Any version-specific considerations]
+*   **Target n8n Versions**: Workflows are verified and fully compatible with **n8n v1.0.0** and newer releases.
+*   **Python Stack**: Python 3.9+ runs our backend search API using FastAPI and SQLite FTS5.
+*   **Last Global Database Reindexing**: May 2026.
