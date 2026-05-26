@@ -11,7 +11,7 @@ python-multipart==0.0.9
 
 # HTTP & Networking
 httpx==0.26.0
-requests==2.31.0
+requests==2.33.0
 
 # Monitoring & Performance
 psutil==5.9.8
