@@ -956,6 +956,4 @@
             .drawer-container { width: 100%; }
             .drawer-body { flex-direction: column; }
             .drawer-sidebar { width: 100%; max-height: 220px; border-right: none; border-bottom: 1px solid var(--border-color); }
-            .hero-section h2 { font-size: 2.2rem; }
         }
-    </style>
