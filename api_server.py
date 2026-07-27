@@ -83,34 +83,24 @@ def validate_filename(filename: str) -> bool:
     Validate filename to prevent path traversal attacks.
     Returns True if filename is safe, False otherwise.
     """
-    # Decode URL encoding multiple times to catch encoded traversal attempts
-    decoded = filename
-    for _ in range(3):  # Decode up to 3 times to catch nested encodings
-        try:
-            decoded = urllib.parse.unquote(decoded, errors="strict")
-        except:
-            return False  # Invalid encoding
+    if not filename or not isinstance(filename, str):
+        return False
+
+    # Decode URL encoding
+    decoded = urllib.parse.unquote(filename, errors="ignore")
 
     # Check for path traversal patterns
     dangerous_patterns = [
-        "..",  # Parent directory
-        "..\\",  # Windows parent directory
-        "../",  # Unix parent directory
-        "\\",  # Backslash (Windows path separator)
-        "/",  # Forward slash (Unix path separator)
-        "\x00",  # Null byte
+        "..",      # Parent directory
+        "..\\",    # Windows parent directory
+        "../",     # Unix parent directory
+        "\\",      # Backslash
+        "/",       # Forward slash
+        "\x00",    # Null byte
         "\n",
-        "\r",  # Newlines
-        "~",  # Home directory
-        ":",  # Drive letter or stream (Windows)
-        "|",
-        "<",
-        ">",  # Shell redirection
-        "*",
-        "?",  # Wildcards
-        "$",  # Variable expansion
-        ";",
-        "&",  # Command separators
+        "\r",      # Newlines
+        "~",       # Home directory
+        ":",       # Drive letter
     ]
 
     for pattern in dangerous_patterns:
@@ -125,12 +115,12 @@ def validate_filename(filename: str) -> bool:
     if len(decoded) >= 2 and decoded[1] == ":":
         return False
 
-    # Only allow alphanumeric, dash, underscore, and .json extension
-    if not re.match(r"^[a-zA-Z0-9_\-]+\.json$", decoded):
+    # Must end with .json extension
+    if not decoded.endswith(".json"):
         return False
 
-    # Additional check: filename should end with .json
-    if not decoded.endswith(".json"):
+    # Must be simple filename with no path component
+    if os.path.basename(decoded) != decoded:
         return False
 
     return True
@@ -143,11 +133,11 @@ async def startup_event():
     try:
         stats = db.get_stats()
         if stats["total"] == 0:
-            print("⚠️  Warning: No workflows found in database. Run indexing first.")
+            print("[WARN]  Warning: No workflows found in database. Run indexing first.")
         else:
-            print(f"✅ Database connected: {stats['total']} workflows indexed")
+            print(f"[OK] Database connected: {stats['total']} workflows indexed")
     except Exception as e:
-        print(f"❌ Database connection failed: {e}")
+        print(f"[ERROR] Database connection failed: {e}")
         raise
 
 
@@ -230,14 +220,32 @@ async def get_stats():
     """Get workflow database statistics."""
     try:
         stats = db.get_stats()
+        stats["categories"] = len(CATEGORY_MAPPINGS)
         return StatsResponse(**stats)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")
 
 
+CATEGORY_MAPPINGS = {
+    "AI & Machine Learning": "openai OR anthropic OR hugging OR ai OR agent OR ollama OR qdrant",
+    "Messaging & Chat": "telegram OR discord OR slack OR whatsapp OR mattermost OR teams",
+    "Email & Marketing": "gmail OR email OR outlook OR mailjet OR mailchimp",
+    "Cloud Storage & Docs": "drive OR docs OR dropbox OR onedrive OR box",
+    "Databases & Airtable": "postgres OR mysql OR mongodb OR redis OR airtable OR notion",
+    "Project Management": "jira OR github OR gitlab OR trello OR asana OR monday",
+    "Social Media": "linkedin OR twitter OR facebook OR instagram",
+    "E-Commerce & Finance": "shopify OR stripe OR paypal OR quickbooks OR xero",
+    "Analytics": "analytics OR mixpanel OR posthog",
+    "Calendar & Tasks": "calendar OR tasks OR cal.com OR calendly",
+    "Forms & Surveys": "typeform OR forms OR jotform OR form",
+    "Webhooks & APIs": "webhook OR http OR graphql OR api OR cron OR schedule"
+}
+
+
 @app.get("/api/workflows", response_model=SearchResponse)
 async def search_workflows(
     q: str = Query("", description="Search query"),
+    category: str = Query("all", description="Filter by category"),
     trigger: str = Query("all", description="Filter by trigger type"),
     complexity: str = Query("all", description="Filter by complexity"),
     active_only: bool = Query(False, description="Show only active workflows"),
@@ -248,8 +256,17 @@ async def search_workflows(
     try:
         offset = (page - 1) * per_page
 
+        # Combine category keywords into search query if category is selected
+        combined_query = q.strip()
+        if category in CATEGORY_MAPPINGS:
+            cat_keywords = CATEGORY_MAPPINGS[category]
+            if combined_query:
+                combined_query = f"{combined_query} {cat_keywords}"
+            else:
+                combined_query = cat_keywords
+
         workflows, total = db.search_workflows(
-            query=q,
+            query=combined_query,
             trigger_filter=trigger,
             complexity_filter=complexity,
             active_only=active_only,
@@ -261,11 +278,15 @@ async def search_workflows(
         workflow_summaries = []
         for workflow in workflows:
             try:
-                # Remove extra fields that aren't in the model
+                fn = workflow.get("filename", "")
+                name = workflow.get("name", "")
+                if not name or name.startswith("Template "):
+                    name = db.format_workflow_name(fn)
+
                 clean_workflow = {
                     "id": workflow.get("id"),
-                    "filename": workflow.get("filename", ""),
-                    "name": workflow.get("name", ""),
+                    "filename": fn,
+                    "name": name,
                     "active": workflow.get("active", False),
                     "description": workflow.get("description", ""),
                     "trigger_type": workflow.get("trigger_type", "Manual"),
@@ -281,7 +302,6 @@ async def search_workflows(
                 print(
                     f"Error converting workflow {workflow.get('filename', 'unknown')}: {e}"
                 )
-                # Continue with other workflows instead of failing completely
                 continue
 
         pages = (total + per_page - 1) // per_page  # Ceiling division
@@ -294,6 +314,7 @@ async def search_workflows(
             pages=pages,
             query=q,
             filters={
+                "category": category,
                 "trigger": trigger,
                 "complexity": complexity,
                 "active_only": active_only,
@@ -305,13 +326,22 @@ async def search_workflows(
         )
 
 
-@app.get("/api/workflows/{filename}")
+@app.get("/api/categories")
+async def get_categories():
+    """Get list of curated top workflow categories."""
+    return list(CATEGORY_MAPPINGS.keys())
+
+
+@app.get("/api/workflows/{filename:path}")
 async def get_workflow_detail(filename: str, request: Request):
     """Get detailed workflow information including raw JSON."""
     try:
+        # Extract plain filename if path is passed
+        clean_filename = os.path.basename(filename)
+
         # Security: Validate filename to prevent path traversal
-        if not validate_filename(filename):
-            print(f"Security: Blocked path traversal attempt for filename: {filename}")
+        if not validate_filename(clean_filename):
+            print(f"Security: Blocked path traversal attempt for filename: {clean_filename}")
             raise HTTPException(status_code=400, detail="Invalid filename format")
 
         # Security: Rate limiting
@@ -321,110 +351,96 @@ async def get_workflow_detail(filename: str, request: Request):
                 status_code=429, detail="Rate limit exceeded. Please try again later."
             )
 
-        # Get workflow metadata from database
-        workflows, _ = db.search_workflows(f'filename:"{filename}"', limit=1)
-        if not workflows:
-            raise HTTPException(
-                status_code=404, detail="Workflow not found in database"
-            )
-
-        workflow_meta = workflows[0]
-
         # Load raw JSON from file with security checks
         workflows_path = Path("workflows").resolve()
 
-        # Find the file safely
+        # Find the file safely using recursive match
         matching_file = None
-        for subdir in workflows_path.iterdir():
-            if subdir.is_dir():
-                target_file = subdir / filename
-                if target_file.exists() and target_file.is_file():
-                    # Verify the file is actually within workflows directory
-                    try:
-                        target_file.resolve().relative_to(workflows_path)
-                        matching_file = target_file
-                        break
-                    except ValueError:
-                        print(
-                            f"Security: Blocked access to file outside workflows: {target_file}"
-                        )
-                        continue
+        for target_file in workflows_path.rglob(clean_filename):
+            if target_file.is_file():
+                try:
+                    target_file.resolve().relative_to(workflows_path)
+                    matching_file = target_file
+                    break
+                except ValueError:
+                    continue
 
         if not matching_file:
-            print(f"Warning: File {filename} not found in workflows directory")
+            print(f"Warning: File '{clean_filename}' not found in workflows directory")
             raise HTTPException(
                 status_code=404,
-                detail=f"Workflow file '{filename}' not found on filesystem",
+                detail=f"Workflow file '{clean_filename}' not found on filesystem",
             )
 
         with open(matching_file, "r", encoding="utf-8") as f:
             raw_json = json.load(f)
 
+        # Infer category from parent folder name
+        category_name = matching_file.parent.name.title()
+
+        # Build metadata
+        workflow_meta = {
+            "filename": clean_filename,
+            "name": raw_json.get("name") or clean_filename.replace(".json", ""),
+            "category": category_name,
+            "node_count": len(raw_json.get("nodes", [])),
+            "nodes": raw_json.get("nodes", []),
+            "connections": raw_json.get("connections", {}),
+            "trigger_type": "Webhook" if "webhook" in json.dumps(raw_json).lower() else "Manual",
+            "active": raw_json.get("active", False),
+            "description": raw_json.get("description", "")
+        }
+
         return {"metadata": workflow_meta, "raw_json": raw_json}
     except HTTPException:
         raise
     except Exception as e:
+        print(f"Error loading workflow detail: {e}")
         raise HTTPException(status_code=500, detail=f"Error loading workflow: {str(e)}")
 
 
-@app.get("/api/workflows/{filename}/download")
+@app.get("/api/workflows/{filename:path}/download")
 async def download_workflow(filename: str, request: Request):
     """Download workflow JSON file with security validation."""
     try:
-        # Security: Validate filename to prevent path traversal
-        if not validate_filename(filename):
-            print(f"Security: Blocked path traversal attempt for filename: {filename}")
+        clean_filename = os.path.basename(filename)
+
+        if not validate_filename(clean_filename):
             raise HTTPException(status_code=400, detail="Invalid filename format")
 
-        # Security: Rate limiting
         client_ip = request.client.host if request.client else "unknown"
         if not check_rate_limit(client_ip):
             raise HTTPException(
                 status_code=429, detail="Rate limit exceeded. Please try again later."
             )
 
-        # Only search within the workflows directory
-        workflows_path = Path("workflows").resolve()  # Get absolute path
+        workflows_path = Path("workflows").resolve()
 
-        # Find the file safely
-        json_files = []
-        for subdir in workflows_path.iterdir():
-            if subdir.is_dir():
-                target_file = subdir / filename
-                if target_file.exists() and target_file.is_file():
-                    # Verify the file is actually within workflows directory (defense in depth)
-                    try:
-                        target_file.resolve().relative_to(workflows_path)
-                        json_files.append(target_file)
-                    except ValueError:
-                        # File is outside workflows directory
-                        print(
-                            f"Security: Blocked access to file outside workflows: {target_file}"
-                        )
-                        continue
+        matching_file = None
+        for target_file in workflows_path.rglob(clean_filename):
+            if target_file.is_file():
+                try:
+                    target_file.resolve().relative_to(workflows_path)
+                    matching_file = target_file
+                    break
+                except ValueError:
+                    continue
 
-        if not json_files:
-            print(f"File {filename} not found in workflows directory")
+        if not matching_file:
             raise HTTPException(
-                status_code=404, detail=f"Workflow file '{filename}' not found"
+                status_code=404,
+                detail=f"Workflow file '{clean_filename}' not found on filesystem",
             )
-
-        file_path = json_files[0]
-
-        # Final security check: Ensure file is within workflows directory
-        try:
-            file_path.resolve().relative_to(workflows_path)
-        except ValueError:
-            print(
-                f"Security: Blocked final attempt to access file outside workflows: {file_path}"
-            )
-            raise HTTPException(status_code=403, detail="Access denied")
 
         return FileResponse(
-            str(file_path), media_type="application/json", filename=filename
+            path=str(matching_file),
+            filename=clean_filename,
+            media_type="application/json"
         )
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error downloading file: {str(e)}")
     except Exception as e:
         print(f"Error downloading workflow {filename}: {str(e)}")
         raise HTTPException(
@@ -759,9 +775,9 @@ async def global_exception_handler(request, exc):
 static_dir = Path("static")
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory="static"), name="static")
-    print(f"✅ Static files mounted from {static_dir.absolute()}")
+    print(f"[OK] Static files mounted from {static_dir.absolute()}")
 else:
-    print(f"❌ Warning: Static directory not found at {static_dir.absolute()}")
+    print(f"[ERROR] Warning: Static directory not found at {static_dir.absolute()}")
 
 
 def create_static_directory():
@@ -779,34 +795,34 @@ def run_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
     # Debug: Check database connectivity
     try:
         stats = db.get_stats()
-        print(f"✅ Database connected: {stats['total']} workflows found")
+        print(f"[OK] Database connected: {stats['total']} workflows found")
         if stats["total"] == 0:
-            print("🔄 Database is empty. Indexing workflows...")
+            print("[WAIT] Database is empty. Indexing workflows...")
             db.index_all_workflows()
             stats = db.get_stats()
     except Exception as e:
-        print(f"❌ Database error: {e}")
-        print("🔄 Attempting to create and index database...")
+        print(f"[ERROR] Database error: {e}")
+        print("[WAIT] Attempting to create and index database...")
         try:
             db.index_all_workflows()
             stats = db.get_stats()
-            print(f"✅ Database created: {stats['total']} workflows indexed")
+            print(f"[OK] Database created: {stats['total']} workflows indexed")
         except Exception as e2:
-            print(f"❌ Failed to create database: {e2}")
+            print(f"[ERROR] Failed to create database: {e2}")
             stats = {"total": 0}
 
     # Debug: Check static files
     static_path = Path("static")
     if static_path.exists():
         files = list(static_path.glob("*"))
-        print(f"✅ Static files found: {[f.name for f in files]}")
+        print(f"[OK] Static files found: {[f.name for f in files]}")
     else:
-        print(f"❌ Static directory not found at: {static_path.absolute()}")
+        print(f"[ERROR] Static directory not found at: {static_path.absolute()}")
 
-    print("🚀 Starting N8N Workflow Documentation API")
-    print(f"📊 Database contains {stats['total']} workflows")
-    print(f"🌐 Server will be available at: http://{host}:{port}")
-    print(f"📁 Static files at: http://{host}:{port}/static/")
+    print("[START] Starting N8N Workflow Documentation API")
+    print(f"[STATS] Database contains {stats['total']} workflows")
+    print(f"[WEB] Server will be available at: http://{host}:{port}")
+    print(f"[DIR] Static files at: http://{host}:{port}/static/")
 
     uvicorn.run(
         "api_server:app",

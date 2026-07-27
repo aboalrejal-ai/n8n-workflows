@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 N8N Workflows Search Engine Launcher
+[START] N8N Workflows Search Engine Launcher
 Start the advanced search system with optimized performance.
 """
 
@@ -11,7 +11,7 @@ import argparse
 
 def print_banner():
     """Print application banner."""
-    print("🚀 n8n-workflows Advanced Search Engine")
+    print("[START] n8n-workflows Advanced Search Engine")
     print("=" * 50)
 
 
@@ -35,11 +35,11 @@ def check_requirements() -> bool:
         missing_deps.append("fastapi")
 
     if missing_deps:
-        print(f"❌ Missing dependencies: {', '.join(missing_deps)}")
-        print("💡 Install with: pip install -r requirements.txt")
+        print(f"[ERROR] Missing dependencies: {', '.join(missing_deps)}")
+        print("[TIP] Install with: pip install -r requirements.txt")
         return False
 
-    print("✅ Dependencies verified")
+    print("[OK] Dependencies verified")
     return True
 
 
@@ -50,7 +50,7 @@ def setup_directories():
     for directory in directories:
         os.makedirs(directory, exist_ok=True)
 
-    print("✅ Directories verified")
+    print("[OK] Directories verified")
 
 
 def setup_database(force_reindex: bool = False, skip_index: bool = False) -> str:
@@ -59,14 +59,14 @@ def setup_database(force_reindex: bool = False, skip_index: bool = False) -> str
 
     db_path = "database/workflows.db"
 
-    print(f"🔄 Setting up database: {db_path}")
+    print(f"[WAIT] Setting up database: {db_path}")
     db = WorkflowDatabase(db_path)
 
     # Skip indexing in CI mode or if explicitly requested
     if skip_index:
         print("⏭️  Skipping workflow indexing (CI mode)")
         stats = db.get_stats()
-        print(f"✅ Database ready: {stats['total']} workflows")
+        print(f"[OK] Database ready: {stats['total']} workflows")
         return db_path
 
     # Check if database has data or force reindex
@@ -74,21 +74,21 @@ def setup_database(force_reindex: bool = False, skip_index: bool = False) -> str
     if stats["total"] == 0 or force_reindex:
         print("📚 Indexing workflows...")
         index_stats = db.index_all_workflows(force_reindex=True)
-        print(f"✅ Indexed {index_stats['processed']} workflows")
+        print(f"[OK] Indexed {index_stats['processed']} workflows")
 
         # Show final stats
         final_stats = db.get_stats()
-        print(f"📊 Database contains {final_stats['total']} workflows")
+        print(f"[STATS] Database contains {final_stats['total']} workflows")
     else:
-        print(f"✅ Database ready: {stats['total']} workflows")
+        print(f"[OK] Database ready: {stats['total']} workflows")
 
     return db_path
 
 
 def start_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
     """Start the FastAPI server."""
-    print(f"🌐 Starting server at http://{host}:{port}")
-    print(f"📊 API Documentation: http://{host}:{port}/docs")
+    print(f"[WEB] Starting server at http://{host}:{port}")
+    print(f"[STATS] API Documentation: http://{host}:{port}/docs")
     print(f"🔍 Workflow Search: http://{host}:{port}/api/workflows")
     print()
     print("Press Ctrl+C to stop the server")
@@ -163,7 +163,7 @@ Examples:
     try:
         setup_database(force_reindex=args.reindex, skip_index=skip_index)
     except Exception as e:
-        print(f"❌ Database setup error: {e}")
+        print(f"[ERROR] Database setup error: {e}")
         sys.exit(1)
 
     # Start server
@@ -172,7 +172,7 @@ Examples:
     except KeyboardInterrupt:
         print("\n👋 Server stopped!")
     except Exception as e:
-        print(f"❌ Server error: {e}")
+        print(f"[ERROR] Server error: {e}")
         sys.exit(1)
 
 

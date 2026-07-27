@@ -1,0 +1,13 @@
+{
+  "name": "n8n-workflows-root",
+  "version": "1.0.0",
+  "description": "Root runner for Backend and Frontend",
+  "scripts": {
+    "dev": "concurrently \"python api_server.py\" \"cd frontend && npm run dev\"",
+    "build": "cd frontend && npm run build",
+    "install-all": "npm install && cd frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

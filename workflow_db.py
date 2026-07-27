@@ -532,7 +532,7 @@ class WorkflowDatabase:
         conn.close()
 
         print(
-            f"✅ Indexing complete: {stats['processed']} processed, {stats['skipped']} skipped, {stats['errors']} errors"
+            f"[OK] Indexing complete: {stats['processed']} processed, {stats['skipped']} skipped, {stats['errors']} errors"
         )
         return stats
 
